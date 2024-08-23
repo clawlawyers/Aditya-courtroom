@@ -1,0 +1,3 @@
+button:disabled > svg {
+  cursor: not-allowed;
+}
