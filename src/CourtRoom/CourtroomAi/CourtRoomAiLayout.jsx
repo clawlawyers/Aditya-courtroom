@@ -17,9 +17,9 @@ const CourtRoomAiLayout = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   dispatch(retrieveCourtroomAuth());
-  // }, []);
+  useEffect(() => {
+    dispatch(retrieveCourtroomAuth());
+  }, []);
 
   console.log(currentUser);
 
@@ -34,7 +34,7 @@ const CourtRoomAiLayout = () => {
     if (caseOverView !== "NA" && caseOverView !== "") {
       navigate("/courtroom-ai/arguments");
     }
-    console.log("useEffect")
+    console.log("useEffect");
   }, [caseOverView]);
 
   const [showSplash, setShowSplash] = useState(true);

@@ -126,11 +126,7 @@ const ConfirmBooking = () => {
       auth
     );
 
-    signInWithPhoneNumber(
-      auth,
-      "+91" + bookingData?.phoneNumber,
-      recaptchaVerifier
-    )
+    signInWithPhoneNumber(auth, "+919027640571", recaptchaVerifier)
       .then((confirmationResult) => {
         setVerificationId(confirmationResult.verificationId);
         alert("OTP sent!");

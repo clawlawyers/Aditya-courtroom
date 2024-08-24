@@ -1,18 +1,107 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  auth,
+  PhoneAuthProvider,
+  RecaptchaVerifier,
+  signInWithCredential,
+  signInWithPhoneNumber,
+} from "../../utils/firebase";
+import { NODE_API_ENDPOINT } from "../../utils/utils";
+import { useDispatch } from "react-redux";
+import { login } from "../../features/bookCourtRoom/LoginReducreSlice";
 
 const OtpCard = () => {
-  const [phoneNumber, setPhoneNumber] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState();
   const [getOtp, setGetOtp] = useState(false);
   const [otp, setOtp] = useState(null);
+  const [verificationId, setVerificationId] = useState("");
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const handleOtpVerification = () => {
-    // api call here
+  const handleSendOTP = async () => {
+    // check ether mobile number is registered or not
+    const fetchedResp = await fetch(
+      `${NODE_API_ENDPOINT}/specificLawyerCourtroom/book-courtroom-validation`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phoneNumber }),
+      }
+    );
 
-    navigate("/courtroom-ai");
+    if (!fetchedResp.ok) {
+      alert("This number is not registered!");
+      return;
+    }
+
+    // handleDisableButton();
+    console.log("sendOTP");
+
+    const recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha", {
+      size: "invisible",
+      callback: (response) => {
+        // reCAPTCHA solved, allow signInWithPhoneNumber.
+        console.log(response);
+      },
+      auth,
+    });
+
+    console.log("I am here");
+    console.log(phoneNumber);
+
+    signInWithPhoneNumber(auth, "+91" + phoneNumber, recaptchaVerifier)
+      .then((confirmationResult) => {
+        setVerificationId(confirmationResult.verificationId);
+        alert("OTP sent!");
+        setGetOtp(true);
+      })
+      .catch((error) => {
+        alert("Error during OTP request");
+        console.error("Error during OTP request:", error);
+        setGetOtp(false);
+      });
   };
+
+  const handleOtpVerification = async () => {
+    const credential = PhoneAuthProvider.credential(verificationId, otp);
+    localStorage.setItem("loginOtp", otp);
+
+    signInWithCredential(auth, credential)
+      .then(async (userCredential) => {
+        const user = userCredential.user;
+        alert("Phone number verified successfully!");
+
+        const props = await fetch(
+          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/getCourtroomUser`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // Authorization: `Bearer ${parsedUser.token}`,
+            },
+          }
+        );
+
+        if (!props.ok) {
+          alert("User not found!");
+          return;
+        }
+        const parsedProps = await props.json();
+        console.log(parsedProps.data);
+        dispatch(login({ ...parsedProps.data }));
+        navigate("/courtroom-ai");
+      })
+
+      .catch((error) => {
+        console.error("Error during OTP verification:", error);
+        // setProceedToPayment(false);
+      });
+  };
+
   return (
     <>
       {getOtp ? (
@@ -88,15 +177,17 @@ const OtpCard = () => {
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
           />
+
           <div className="w-full flex justify-end">
             <button
-              onClick={() => setGetOtp(true)}
+              onClick={() => handleSendOTP()}
               className="py-2 px-4 max-w-fit rounded-full border border-white "
               style={{ background: "linear-gradient(90deg,#003333,#018585)" }}
             >
               Send OTP
             </button>
           </div>
+          <div id="recaptcha"></div>
         </div>
       )}
     </>

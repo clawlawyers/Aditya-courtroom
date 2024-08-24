@@ -4,7 +4,7 @@ import { NODE_API_ENDPOINT } from "../../utils/utils";
 export const retrieveCourtroomAuth = createAsyncThunk(
   "auth/retrieveAuth",
   async () => {
-    const storedAuth = localStorage.getItem("courtroom-auth");
+    const storedAuth = localStorage.getItem("specific-courtroom-auth");
     console.log(storedAuth);
     if (storedAuth) {
       const parsedUser = JSON.parse(storedAuth);
@@ -14,7 +14,8 @@ export const retrieveCourtroomAuth = createAsyncThunk(
         {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${parsedUser.token}`,
+            "Content-Type": "application/json",
+            // Authorization: `Bearer ${parsedUser.token}`,
           },
         }
       );
@@ -38,11 +39,11 @@ const userSlice = createSlice({
     login(state, action) {
       const { user } = action.payload;
       state.user = user;
-      localStorage.setItem("courtroom-auth", JSON.stringify(user));
+      localStorage.setItem("specific-courtroom-auth", JSON.stringify(user));
     },
     logout(state) {
       state.user = "";
-      localStorage.removeItem("courtroom-auth");
+      localStorage.removeItem("specific-courtroom-auth");
     },
     setOverview(state, action) {
       state.caseOverview = action.payload;
