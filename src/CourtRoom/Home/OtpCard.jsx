@@ -10,6 +10,7 @@ import {
 import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { useDispatch } from "react-redux";
 import { login } from "../../features/bookCourtRoom/LoginReducreSlice";
+import { data } from "autoprefixer";
 
 const OtpCard = () => {
   const [phoneNumber, setPhoneNumber] = useState();
@@ -92,7 +93,7 @@ const OtpCard = () => {
         }
         const parsedProps = await props.json();
         console.log(parsedProps.data);
-        dispatch(login({ ...parsedProps.data }));
+        dispatch(login({ user: parsedProps.data }));
         navigate("/courtroom-ai");
       })
 
