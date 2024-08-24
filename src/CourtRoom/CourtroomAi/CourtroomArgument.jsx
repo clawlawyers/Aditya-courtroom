@@ -752,7 +752,7 @@ const CourtroomArgument = () => {
             alt="voice.png"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 relative">
           <motion.button
             whileTap={{ scale: "0.95" }}
             onClick={handleAddArgument}
@@ -802,7 +802,7 @@ const CourtroomArgument = () => {
             <h2 style={{ fontSize: "15px", margin: "0" }}>Rest Your Case</h2>
           </motion.button>
           {verdictAccess ? (
-            <h1 className="z-30 absolute text-xs right-7 -top-12 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+            <h1 className="z-30 absolute text-xs right-7 -top-8 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
               To Enable It : Contact Sales
             </h1>
           ) : (

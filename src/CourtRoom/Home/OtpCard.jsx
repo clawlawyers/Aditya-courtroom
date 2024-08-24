@@ -11,6 +11,7 @@ import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { useDispatch } from "react-redux";
 import { login } from "../../features/bookCourtRoom/LoginReducreSlice";
 import { data } from "autoprefixer";
+import { motion } from "framer-motion";
 
 const OtpCard = () => {
   const [phoneNumber, setPhoneNumber] = useState();
@@ -173,13 +174,14 @@ const OtpCard = () => {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
             />
-            <button
+            <motion.button
+              whileTap={{ scale: "0.95" }}
               onClick={handleOtpVerification}
               className="py-2 px-4 max-w-fit rounded-full border border-white "
               style={{ background: "linear-gradient(90deg,#003333,#018585)" }}
             >
               Verify OTP
-            </button>
+            </motion.button>
           </div>
         </div>
       ) : (
@@ -195,13 +197,14 @@ const OtpCard = () => {
           />
 
           <div className="w-full flex justify-end">
-            <button
+            <motion.button
+              whileTap={{ scale: "0.95" }}
               onClick={() => handleSendOTP()}
               className="py-2 px-4 max-w-fit rounded-full border border-white "
               style={{ background: "linear-gradient(90deg,#003333,#018585)" }}
             >
               Send OTP
-            </button>
+            </motion.button>
           </div>
           <div id="recaptcha"></div>
         </div>

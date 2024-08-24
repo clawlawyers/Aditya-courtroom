@@ -11,7 +11,7 @@ import mainIntro from "../../assets/images/mainIntro.mp4";
 import plus from "../../assets/images/Group 53.png";
 import Styles from "./CourtRoomHome.module.css";
 import arrw from "../../assets/images/Vector 1.png";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { motion } from "framer-motion";
 import Slider from "react-slick";
@@ -19,6 +19,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import TestimonialCard from "./Testimonial";
 import OtpCard from "./OtpCard";
+import { useSelector } from "react-redux";
 
 function SampleNextArrow(props) {
   const { className, style } = props;
@@ -31,32 +32,14 @@ function SamplePrevArrow(props) {
 }
 
 function Home() {
-  const [submitHover, setSubmitHover] = useState(false);
+  const user = useSelector((state) => state.user.user);
   const [isHovered, setIsHovered] = useState(false);
 
-  const settings = {
-    dots: false,
-    infinite: true,
-    speed: 700,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 5000,
-    cssEase: "linear",
-    nextArrow: <SampleNextArrow />,
-    prevArrow: <SamplePrevArrow />,
-  };
+  const navigate = useNavigate();
 
-  const testimonialSettings = {
-    // className: "center",
-    // centerMode: true,
-    infinite: true,
-    // centerPadding: "0px",
-    slidesToShow: 3,
-    // speed: 500,
-  };
-
-  const testimonialArr = [1, 2, 3, 4, 5, 6];
+  if (user) {
+    navigate("/courtroom-ai/");
+  }
 
   return (
     <motion.div

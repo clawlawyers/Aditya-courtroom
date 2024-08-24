@@ -23,110 +23,6 @@ import Markdown from "react-markdown";
 import toast from "react-hot-toast";
 import loader from "../../assets/images/aiAssistantLoading.gif";
 
-const dialogText =
-  "n publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before the final copy is availablen publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before the final copy is availablen publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used as a placeholder before the final copy is available";
-
-const aiSuggestion =
-  "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content.In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content.In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content.In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content.In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content.";
-
-const TimerComponent = React.memo(({ EndSessionToCourtroom }) => {
-  const slotTimeInterval = useSelector((state) => state.user.user.slotTime);
-  const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
-  const [countdownOver, setCountDownOver] = useState(false);
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      const minutesLeft = 60 - now.getMinutes() - 1;
-      const secondsLeft = 60 - now.getSeconds();
-      setTimeLeft({ minutes: minutesLeft, seconds: secondsLeft });
-    };
-
-    calculateTimeLeft();
-
-    const timer = setInterval(calculateTimeLeft, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (slotTimeInterval < new Date().getHours()) {
-      setCountDownOver(true);
-    }
-  });
-
-  return (
-    <>
-      <div
-        className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded"
-        style={{ borderColor: timeLeft.minutes < 5 ? "red" : "white" }}
-      >
-        <h1 className="text-sm m-0">Time Remaining:</h1>
-        <h1
-          className="text-sm m-0 font-semibold"
-          style={{ color: timeLeft.minutes < 5 ? "red" : "#008080" }}
-        >
-          {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
-          {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds}
-        </h1>
-      </div>
-      {countdownOver ? (
-        <div
-          style={{
-            width: "100%",
-            height: "100vh",
-            position: "absolute",
-            left: "0",
-            right: "0",
-            backgroundColor: "rgba(0, 0, 0, 0.1)",
-            backdropFilter: "blur(3px)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: "20",
-          }}
-        >
-          <div
-            className="flex flex-col justify-center gap-20 p-5"
-            style={{
-              background: "linear-gradient(to right,#0e1118,#008080)",
-              height: "450px",
-              width: "900px",
-              border: "4px solid red",
-              borderRadius: "10px",
-            }}
-          >
-            <div className="flex flex-col justify-center items-center gap-10">
-              <img className="w-28 h-28" alt="clock" src={countDown} />
-              <h1 className="text-3xl">Your Courtroom Time is Over</h1>
-            </div>
-            <div className="flex justify-center">
-              <motion.button
-                onClick={() => EndSessionToCourtroom()}
-                whileTap={{ scale: "0.95" }}
-                className="border border-white rounded-lg py-2 px-8"
-              >
-                Go Back To Homepage
-              </motion.button>
-              {/* <Link to={"/courtroom-ai/verdict"}>
-                <motion.button
-                  onClick={() => setCountDownOver(false)}
-                  whileTap={{ scale: "0.95" }}
-                  className="border border-white rounded-lg py-2 px-8 text-white"
-                >
-                  View Verdict
-                </motion.button>
-              </Link> */}
-            </div>
-          </div>
-        </div>
-      ) : (
-        ""
-      )}
-    </>
-  );
-});
-
 const AiSidebar = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [pages, setPages] = useState([]);
@@ -208,6 +104,9 @@ const AiSidebar = () => {
   const firstDraftAccess = useSelector(
     (state) => state.user.user.courtroomFeatures.FirstDraft
   );
+  const relevantCaseLawsAccess = useSelector(
+    (state) => state.user.user.courtroomFeatures.RelevantCaseLaws
+  );
 
   const [editDialog, setEditDialog] = useState(false);
   const [firstDraftDialog, setFirstDraftDialog] = useState(false);
@@ -221,6 +120,7 @@ const AiSidebar = () => {
   const [downloadSessionLoading, setDownloadSessionLoading] = useState(false);
   const [aiAccessHover, setAiAccessHover] = useState(false);
   const [draftAccessHover, setDraftAccessHover] = useState(false);
+  const [relevantCaseAccessHover, setRelevantCaseAccessHover] = useState(false);
 
   useEffect(() => {
     setText(overViewDetails);
@@ -553,7 +453,6 @@ const AiSidebar = () => {
               </div>
             </div>
           </div>
-          <TimerComponent EndSessionToCourtroom={EndSessionToCourtroom} />
         </div>
         {/* bottom container */}
         <div className="flex-1 overflow-auto border-2 border-black rounded flex flex-col relative px-4 py-4 gap-2 justify-between">
@@ -970,16 +869,36 @@ const AiSidebar = () => {
                       <img className="" src={logo} alt="logo" />
                       <h3 className=" text-center">Draft Preview</h3>
                     </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button className="border border-white rounded-md py-1">
+                    <div className="grid grid-cols-2 gap-2 relative">
+                      <motion.button
+                        disabled={!relevantCaseLawsAccess}
+                        className="border border-white rounded-md py-1"
+                        onHoverStart={() =>
+                          relevantCaseLawsAccess
+                            ? setRelevantCaseAccessHover(true)
+                            : ""
+                        }
+                        onHoverEnd={() =>
+                          relevantCaseLawsAccess
+                            ? setRelevantCaseAccessHover(false)
+                            : ""
+                        }
+                      >
                         Relevant Case Laws
-                      </button>
+                      </motion.button>
                       <button
                         onClick={() => dowloadFirstDraft()}
                         className="border border-white rounded-md py-1"
                       >
                         <Download /> Download
                       </button>
+                      {relevantCaseAccessHover ? (
+                        <h1 className="z-30 absolute text-xs left-7 -top-9 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                          To Enable It : Contact Sales
+                        </h1>
+                      ) : (
+                        ""
+                      )}
                     </div>
                   </div>
                 </div>
