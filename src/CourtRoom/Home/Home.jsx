@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import courtroom from "../../assets/images/Courtroom.png";
 import feature1 from "../../assets/images/image 2.png";
 import feature2 from "../../assets/images/image 3.png";
@@ -14,12 +14,9 @@ import arrw from "../../assets/images/Vector 1.png";
 import { Link, useNavigate } from "react-router-dom";
 
 import { motion } from "framer-motion";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import TestimonialCard from "./Testimonial";
 import OtpCard from "./OtpCard";
 import { useSelector } from "react-redux";
+import { NODE_API_ENDPOINT } from "../../utils/utils";
 
 function SampleNextArrow(props) {
   const { className, style } = props;
@@ -34,12 +31,41 @@ function SamplePrevArrow(props) {
 function Home() {
   const user = useSelector((state) => state.user.user);
   const [isHovered, setIsHovered] = useState(false);
+  const [userName, setUserName] = useState("");
 
   const navigate = useNavigate();
 
   if (user) {
     navigate("/courtroom-ai/");
   }
+
+  useEffect(() => {
+    getUserName();
+  }, []);
+
+  const getUserName = async () => {
+    try {
+      const props = await fetch(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/getusername`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Authorization: `Bearer ${parsedUser.token}`,
+          },
+        }
+      );
+      if (!props.ok) {
+        alert("User not found!");
+        return;
+      }
+      const parsedProps = await props.json();
+      setUserName(parsedProps?.data?.username);
+    } catch (error) {
+      alert("Something went wrong");
+      console.log(error);
+    }
+  };
 
   return (
     <motion.div
@@ -52,8 +78,7 @@ function Home() {
       <div className="grid md:grid-cols-2 my-20">
         <div className="pl-40 flex flex-col items-end">
           <h1 className="text-2xl text-start">
-            Welcome to{" "}
-            <span className="text-3xl font-bold"> Aditya Goel's</span>
+            Welcome to <span className="text-3xl font-bold"> {userName}'s</span>
           </h1>
           <h1 className="text-6xl font-bold text-[#00AFAF]">AI Courtroom</h1>
           <p className="text-gray-400 font-semibold pl-64">
@@ -432,17 +457,6 @@ function Home() {
             </Link>
           </div>
         </motion.div>
-      </div>
-
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col justify-center items-center gap-1">
-          <h1 className="font-bold text-5xl md:text-6xl">Testimonials</h1>
-          <p className="text-lg md:text-xl">
-            Get to know what the professionals got to say
-          </p>
-        </div>
-        <TestimonialCard />
-        <br />
       </div>
     </motion.div>
   );
