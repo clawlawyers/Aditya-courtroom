@@ -874,12 +874,12 @@ const AiSidebar = () => {
                         disabled={!relevantCaseLawsAccess}
                         className="border border-white rounded-md py-1"
                         onHoverStart={() =>
-                          relevantCaseLawsAccess
+                          !relevantCaseLawsAccess
                             ? setRelevantCaseAccessHover(true)
                             : ""
                         }
                         onHoverEnd={() =>
-                          relevantCaseLawsAccess
+                          !relevantCaseLawsAccess
                             ? setRelevantCaseAccessHover(false)
                             : ""
                         }
