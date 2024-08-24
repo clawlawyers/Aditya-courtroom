@@ -96,7 +96,7 @@ const CalendarComponent = ({ scheduledSlots, setScheduledSlots }) => {
     const getBookingDetails = async () => {
       try {
         const response = await axios.get(
-          `${NODE_API_ENDPOINT}/courtroom/book-courtroom`
+          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/book-courtroom`
         );
         const bookedDatesData = response.data;
         setBookingData(bookedDatesData);

@@ -67,12 +67,14 @@ const Container = styled.div`
 export default function TimePickerValue({ selectedTimes, setSelectedTimes }) {
   const [bookingData, setBookingData] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const storedSelectedDate = localStorage.getItem('SelectedDate');
+  const storedSelectedDate = localStorage.getItem("SelectedDate");
 
   useEffect(() => {
     const getBookingDetails = async () => {
       try {
-        const response = await axios.get(`${NODE_API_ENDPOINT}/courtroom/book-courtroom`);
+        const response = await axios.get(
+          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/book-courtroom`
+        );
         const bookedDatesData = response.data;
 
         const dateHourMap = bookedDatesData.reduce((acc, slot) => {

@@ -115,7 +115,7 @@ const CourtroomArgument = () => {
     setEditIndex(null);
 
     const inserUserArgument = await axios.post(
-      `${NODE_API_ENDPOINT}/courtroom/user_arguemnt`,
+      `${NODE_API_ENDPOINT}/specificLawyerCourtroom/user_arguemnt`,
       {
         // user_id: currentUser.userId,
         argument: editValue,
@@ -136,7 +136,7 @@ const CourtroomArgument = () => {
   const handleSwap = async () => {
     try {
       const swapedData = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/change_states`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/change_states`,
         {
           // user_id: currentUser.userId,
         },
@@ -186,7 +186,7 @@ const CourtroomArgument = () => {
     try {
       setAiLawyerLoading(true);
       const laywerArgument1 = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/lawyer`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/lawyer`,
         {
           // user_id: currentUser.userId,
           action: "Retrieve",
@@ -210,7 +210,7 @@ const CourtroomArgument = () => {
       setAiJudgeLoading(true);
 
       let judgeArgument = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/judge`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/judge`,
         {
           // user_id: currentUser.userId,
           action: "Retrieve",
@@ -260,7 +260,7 @@ const CourtroomArgument = () => {
       setAiLawyerLoading(true);
 
       const laywerArgument1 = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/lawyer`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/lawyer`,
         {
           // user_id: currentUser.userId,
           action: "Generate",
@@ -284,7 +284,7 @@ const CourtroomArgument = () => {
       setAiJudgeLoading(true);
 
       let judgeArgument = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/judge`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/judge`,
         {
           // user_id: currentUser.userId,
           action: "Generate",
@@ -315,7 +315,7 @@ const CourtroomArgument = () => {
       setAiLawyerLoading(true);
 
       const inserUserArgument = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/user_arguemnt`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/user_arguemnt`,
         {
           // user_id: currentUser.userId,
           argument: addArgumentInputText,
@@ -354,7 +354,7 @@ const CourtroomArgument = () => {
     const getHistory = async () => {
       try {
         const history = await axios.get(
-          `${NODE_API_ENDPOINT}/courtroom/getHistory`,
+          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/getHistory`,
           {
             headers: {
               Authorization: `Bearer ${currentUser.token}`,

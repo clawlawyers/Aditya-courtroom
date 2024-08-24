@@ -15,7 +15,7 @@ const Verdict = () => {
       setLoading(true);
       try {
         const response = await axios.post(
-          `${NODE_API_ENDPOINT}/courtroom/api/rest`,
+          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/rest`,
           {
             // user_id: currentUser.userId,
           },

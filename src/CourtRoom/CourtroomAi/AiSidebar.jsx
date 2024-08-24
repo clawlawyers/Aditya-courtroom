@@ -241,7 +241,7 @@ const AiSidebar = () => {
     // await saveHistory();
     if (overViewDetails !== "") {
       await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/end`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/end`,
         {
           userId: currentUser.userId,
         },
@@ -262,7 +262,7 @@ const AiSidebar = () => {
     try {
       if (overViewDetails !== "NA") {
         await axios.post(
-          `${NODE_API_ENDPOINT}/courtroom/api/history`,
+          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/history`,
           {
             // user_id: currentUser.userId,
           },
@@ -282,7 +282,7 @@ const AiSidebar = () => {
   const handleSave = async () => {
     try {
       await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/edit_case`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/edit_case`,
         {
           // user_id: currentUser.userId,
           case_overview: text,
@@ -314,7 +314,7 @@ const AiSidebar = () => {
       const firstDraftApi = async () => {
         try {
           const response = await axios.post(
-            `${NODE_API_ENDPOINT}/courtroom/api/draft`,
+            `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/draft`,
             {
               // user_id: currentUser.userId,
             },
@@ -342,7 +342,7 @@ const AiSidebar = () => {
     setAiAssistantLoading(true);
     try {
       const response = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/hallucination_questions`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/hallucination_questions`,
         {
           // user_id: currentUser.userId,
         },
@@ -369,7 +369,7 @@ const AiSidebar = () => {
     const getOverview = async () => {
       try {
         const overView = await axios.post(
-          `${NODE_API_ENDPOINT}/courtroom/getCaseOverview`,
+          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/getCaseOverview`,
           {
             // user_id: currentUser.userId,
           },
@@ -403,7 +403,7 @@ const AiSidebar = () => {
     try {
       await saveHistory();
       const response = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/downloadCaseHistory`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/downloadCaseHistory`,
         {
           // user_id: currentUser.userId,
         },
@@ -436,7 +436,7 @@ const AiSidebar = () => {
       await saveHistory();
 
       const response = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/downloadSessionCaseHistory`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/downloadSessionCaseHistory`,
         {
           // user_id: currentUser.userId,
         },
@@ -470,7 +470,7 @@ const AiSidebar = () => {
   const dowloadFirstDraft = async () => {
     try {
       const response = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/download`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/download`,
         {
           // user_id: currentUser.userId,
           data: firstDraft,

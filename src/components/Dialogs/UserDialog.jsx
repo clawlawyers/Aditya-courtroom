@@ -76,7 +76,7 @@ const UserDialog = ({ onClose, onUserAdd }) => {
 
     try {
       const response = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/book-courtroom`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/book-courtroom`,
         {
           name: formData.username,
           phoneNumber: formData.phoneNumber,

@@ -15,7 +15,7 @@ const DocumentViewer = ({ text }) => {
   const downloadVerdict = async () => {
     try {
       const response = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/download`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/download`,
         {
           // user_id: currentUser.userId,
           data: text,
@@ -45,9 +45,12 @@ const DocumentViewer = ({ text }) => {
   return (
     <div className="flex h-screen gap-5 px-40">
       <div className="flex flex-col items-center bg-[#7ebab2] my-3 w-full">
-        <img src={verdictLogo} alt="verdict" className=" mt-4" /> {/* Added margin to top */}
+        <img src={verdictLogo} alt="verdict" className=" mt-4" />{" "}
+        {/* Added margin to top */}
         <img className="w-20 h-[5rem]" src={logo} alt="logo" />
-        <div className="flex flex-col items-start justify-start px-5 h-full overflow-y-auto text-black pt-4"> {/* Added padding to top */}
+        <div className="flex flex-col items-start justify-start px-5 h-full overflow-y-auto text-black pt-4">
+          {" "}
+          {/* Added padding to top */}
           <Markdown>{text}</Markdown>
         </div>
         <div className="flex flex-row w-full justify-end items-center py-2 px-3">

@@ -34,7 +34,7 @@ const Contact = () => {
     try {
       // Make the API request
       const response = await fetch(
-        `${NODE_API_ENDPOINT}/courtroom/add/ContactUsQuery`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/add/ContactUsQuery`,
         {
           method: "POST",
           headers: {

@@ -21,7 +21,22 @@ const OtpCard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // Function to clear children of an element
+  function clearRecaptchaChildren() {
+    const recaptchaElement = document.getElementById("recaptcha");
+
+    if (recaptchaElement) {
+      while (recaptchaElement.firstChild) {
+        recaptchaElement.removeChild(recaptchaElement.firstChild);
+      }
+    } else {
+      console.warn('Element with ID "recaptcha" not found.');
+    }
+  }
+
   const handleSendOTP = async () => {
+    // Example usage
+    clearRecaptchaChildren();
     // check ether mobile number is registered or not
     const fetchedResp = await fetch(
       `${NODE_API_ENDPOINT}/specificLawyerCourtroom/book-courtroom-validation`,

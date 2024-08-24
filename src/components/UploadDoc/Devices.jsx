@@ -44,7 +44,7 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
 
     try {
       await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/edit_case`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/edit_case`,
         {
           // user_id: currentUser.userId,
           case_overview: inputText,
@@ -101,7 +101,7 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
 
         try {
           const response = await axios.post(
-            `${NODE_API_ENDPOINT}/courtroom/newcase`,
+            `${NODE_API_ENDPOINT}/specificLawyerCourtroom/newcase`,
             formData,
             {
               headers: {
@@ -120,7 +120,6 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
           setTimeout(() => {
             setAnalyzing(false);
             setUploadComplete(true);
-            
           }, 3000);
         } catch (error) {
           console.log(error);

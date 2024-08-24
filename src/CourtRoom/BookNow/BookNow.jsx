@@ -66,7 +66,7 @@ const BookNow = () => {
     };
     console.log("Booking Data:", bookingData);
     const respos = await axios.post(
-      `${NODE_API_ENDPOINT}/courtroom/book-courtroom-validation`,
+      `${NODE_API_ENDPOINT}/specificLawyerCourtroom/book-courtroom-validation`,
       {
         ...bookingData,
       }
