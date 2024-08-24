@@ -202,7 +202,12 @@ const AiSidebar = () => {
   const [isApi, setisApi] = useState(false);
   const overViewDetails = useSelector((state) => state.user.caseOverview);
   const currentUser = useSelector((state) => state.user.user);
-  const slotTimeInterval = useSelector((state) => state.user.user.slotTime);
+  const aiAssistantAccess = useSelector(
+    (state) => state.user.user.courtroomFeatures.AiAssistant
+  );
+  const firstDraftAccess = useSelector(
+    (state) => state.user.user.courtroomFeatures.FirstDraft
+  );
 
   const [editDialog, setEditDialog] = useState(false);
   const [firstDraftDialog, setFirstDraftDialog] = useState(false);
@@ -214,6 +219,8 @@ const AiSidebar = () => {
   const [aiAssistantLoading, setAiAssistantLoading] = useState(true);
   const [downloadCaseLoading, setDownloadCaseLoading] = useState(false);
   const [downloadSessionLoading, setDownloadSessionLoading] = useState(false);
+  const [aiAccessHover, setAiAccessHover] = useState(false);
+  const [draftAccessHover, setDraftAccessHover] = useState(false);
 
   useEffect(() => {
     setText(overViewDetails);
@@ -664,27 +671,47 @@ const AiSidebar = () => {
               </div>
             </motion.div>
           </div>
-          <div className="flex justify-end cursor-pointer relative">
-            <motion.img
-              className="h-11 w-11"
-              whileTap={{ scale: "0.95" }}
-              alt="assistant"
-              src={showAssistant ? assistantIcon2 : aiAssistant}
-              onHoverStart={() => setAiIconHover(true)}
-              onHoverEnd={() => setAiIconHover(false)}
-              onClick={() => {
-                setShowAssistant(true);
-                getAiQuestions();
-              }}
-            />
-            {aiIconHover ? (
-              <h1 className="absolute text-xs right-16 top-1 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
-                CLAW AI Assistant
-              </h1>
-            ) : (
-              ""
-            )}
-          </div>
+          {aiAssistantAccess ? (
+            <div className="flex justify-end cursor-pointer relative">
+              <motion.img
+                className="h-11 w-11"
+                whileTap={{ scale: "0.95" }}
+                alt="assistant"
+                src={showAssistant ? assistantIcon2 : aiAssistant}
+                onHoverStart={() => setAiIconHover(true)}
+                onHoverEnd={() => setAiIconHover(false)}
+                onClick={() => {
+                  setShowAssistant(true);
+                  getAiQuestions();
+                }}
+              />
+              {aiIconHover ? (
+                <h1 className="absolute text-xs right-16 top-1 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                  CLAW AI Assistant
+                </h1>
+              ) : (
+                ""
+              )}
+            </div>
+          ) : (
+            <div className="flex justify-end cursor-pointer relative">
+              <motion.img
+                className="h-11 w-11"
+                whileTap={{ scale: "0.95" }}
+                alt="assistant"
+                src={aiAssistant}
+                onHoverStart={() => setAiAccessHover(true)}
+                onHoverEnd={() => setAiAccessHover(false)}
+              />
+              {aiAccessHover ? (
+                <h1 className="absolute text-xs right-16 top-1 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                  To Enable It : Contact Sales
+                </h1>
+              ) : (
+                ""
+              )}
+            </div>
+          )}
           <div className="flex flex-col w-full h-full justify-start items-center gap-2">
             <div
               style={{
@@ -698,7 +725,13 @@ const AiSidebar = () => {
             </div>
             <div className="h-full flex flex-col justify-evenly">
               <motion.div
-                onClick={handleFirstDraft}
+                onClick={firstDraftAccess ? handleFirstDraft : null}
+                onHoverStart={() =>
+                  !firstDraftAccess ? setDraftAccessHover(true) : ""
+                }
+                onHoverEnd={() =>
+                  !firstDraftAccess ? setDraftAccessHover(false) : ""
+                }
                 whileTap={{ scale: "0.95" }}
                 whileHover={{ scale: "1.01" }}
                 className={`${
@@ -711,6 +744,7 @@ const AiSidebar = () => {
                   alignItems: "center",
                   gap: "10px",
                   cursor: "pointer",
+                  position: "relative",
                 }}
               >
                 <svg
@@ -731,6 +765,13 @@ const AiSidebar = () => {
                 </svg>
 
                 <p className="m-0 text-sm text-white">View first Draft</p>
+                {draftAccessHover ? (
+                  <h1 className="z-30 absolute text-xs right-7 -top-12 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                    To Enable It : Contact Sales
+                  </h1>
+                ) : (
+                  ""
+                )}
               </motion.div>
               <motion.div
                 className={`${

@@ -20,9 +20,9 @@ export const retrieveCourtroomAuth = createAsyncThunk(
         }
       );
       const parsedProps = await props.json();
-      // console.log(parsedProps.data);
+      // console.log(parsedProps);
       return {
-        user: parsedUser,
+        user: parsedProps.data,
       };
     } else return null;
   }

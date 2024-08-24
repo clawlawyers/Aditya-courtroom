@@ -13,6 +13,7 @@ import Markdown from "react-markdown";
 import toast from "react-hot-toast";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
+import voiceIcon from "../../assets/images/voice.png";
 
 // const userArgument = [
 //   "I feel your pain. This is such a simple function and yet they make it so amazingly complicated. I find the same nonsense with adding a simple border to an object. They have 400 ways to shade the color of a box, but not even 1 simple option for drawing a line around the box. I get the feeling the Figma designers don’t ever use their product",
@@ -34,6 +35,9 @@ import Typography from "@mui/material/Typography";
 // ];
 
 const CourtroomArgument = () => {
+  const verdictAccessRedux = useSelector(
+    (state) => state.user.user.courtroomFeatures.Verdict
+  );
   const navigate = useNavigate();
 
   const [dialogContent, setDialogContent] = useState(
@@ -56,6 +60,7 @@ const CourtroomArgument = () => {
   const [objectionIndex, setObjectionIndex] = useState("");
 
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [verdictAccess, setVerdictAccess] = useState(false);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -726,7 +731,7 @@ const CourtroomArgument = () => {
       </div>
       {/* bottom container */}
       <div className="w-full grid grid-cols-[65%_35%] items-center">
-        <div className="pr-2">
+        <div className="pr-2 relative">
           <input
             value={addArgumentInputText !== null ? addArgumentInputText : ""}
             disabled={aiJudgeLoading || aiLawyerLoading}
@@ -740,6 +745,11 @@ const CourtroomArgument = () => {
               cursor: "pointer",
             }}
             placeholder="Input Your Case Into The Courtroom"
+          />
+          <img
+            className="absolute right-4 top-2"
+            src={voiceIcon}
+            alt="voice.png"
           />
         </div>
         <div className="flex gap-2">
@@ -766,8 +776,15 @@ const CourtroomArgument = () => {
             <h2 style={{ fontSize: "15px", margin: "0" }}>Add Argument</h2>
           </motion.button>
           <motion.button
+            disabled={!verdictAccessRedux}
             whileTap={{ scale: "0.95" }}
-            onClick={handleVerdict}
+            onClick={verdictAccessRedux ? handleVerdict : null}
+            onHoverStart={() =>
+              !verdictAccessRedux ? setVerdictAccess(true) : ""
+            }
+            onHoverEnd={() =>
+              !verdictAccessRedux ? setVerdictAccess(false) : ""
+            }
             className="flex-1 my-2"
             style={{
               display: "flex",
@@ -784,6 +801,13 @@ const CourtroomArgument = () => {
           >
             <h2 style={{ fontSize: "15px", margin: "0" }}>Rest Your Case</h2>
           </motion.button>
+          {verdictAccess ? (
+            <h1 className="z-30 absolute text-xs right-7 -top-12 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+              To Enable It : Contact Sales
+            </h1>
+          ) : (
+            ""
+          )}
         </div>
       </div>
     </div>
