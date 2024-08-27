@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Button } from "@mui/material";
+import { Button, Menu } from "@mui/material";
 import { ArrowRight, Download } from "@mui/icons-material";
 import { ArrowLeft } from "@mui/icons-material";
+import { MenuItem, IconButton } from "@mui/material";
+import { Popover } from "@mui/material";
 import {
   logout,
   setOverview,
@@ -22,6 +24,8 @@ import countDown from "../../assets/images/countdown.gif";
 import Markdown from "react-markdown";
 import toast from "react-hot-toast";
 import loader from "../../assets/images/aiAssistantLoading.gif";
+import { MoreVert } from "@mui/icons-material";
+import EvidenceDialog from "../../components/Dialogs/EvidenceDialog";
 
 const AiSidebar = () => {
   const [currentPage, setCurrentPage] = useState(0);
@@ -37,7 +41,9 @@ const AiSidebar = () => {
   const [promptArr, setPromptArr] = useState([]);
   const [askLegalGptPrompt, setAskLegalGptPrompt] = useState(null);
   const [searchQuery, setSearchQuery] = useState(false);
-
+  const [evidenceAnchorEl, setEvidenceAnchorEl] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isEvidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
   const charsPerPage = 1000; // Define this value outside the function
 
   // Function to split text into pages
@@ -84,6 +90,13 @@ const AiSidebar = () => {
       setCurrentText(pages[currentPage + 1] || "");
     }
   };
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleTextChange = (e) => {
     setCurrentText(e.target.value);
@@ -91,6 +104,14 @@ const AiSidebar = () => {
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
+  };
+  const handleEvidenceClick = (event) => {
+    setEvidenceAnchorEl(event.currentTarget);
+    handleMenuClose();
+  };
+
+  const handleEvidenceClose = () => {
+    setEvidenceAnchorEl(null);
   };
 
   const navigate = useNavigate();
@@ -438,13 +459,56 @@ const AiSidebar = () => {
                   Case Details :{" "}
                 </p>
 
-                <motion.button
+                {/* <motion.button
                   whileTap={{ scale: "0.95" }}
                   onClick={() => setEditDialog(true)}
                   className="border-2 border-[#00FFA3] rounded-lg p-1 px-2"
                 >
                   Edit
-                </motion.button>
+                </motion.button> */}
+                <IconButton
+                  aria-label="more"
+                  aria-controls="long-menu"
+                  aria-haspopup="true"
+                  onClick={handleMenuOpen}
+                >
+                  <MoreVert />
+                </IconButton>
+                <Menu
+                  id="long-menu"
+                  anchorEl={anchorEl}
+                  keepMounted
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                >
+                  <MenuItem onClick={() => setEditDialog(true)}>Edit</MenuItem>
+                  <MenuItem onClick={handleEvidenceClick}>
+                    Add Evidences
+                  </MenuItem>
+                  <MenuItem>Save</MenuItem>
+                </Menu>
+
+                <Popover
+                  open={Boolean(evidenceAnchorEl)}
+                  anchorEl={evidenceAnchorEl}
+                  onClose={handleEvidenceClose}
+                  anchorOrigin={{
+                    vertical: "center",
+                    horizontal: "right",
+                  }}
+                  transformOrigin={{
+                    vertical: "center",
+                    horizontal: "left",
+                  }}
+                  sx={{
+                    "& .MuiPaper-root": {
+                      width: "600px", // Adjust the width as needed
+                      padding: "16px", // Adjust the padding as needed
+                    },
+                  }}
+                >
+                  <EvidenceDialog onClose={handleEvidenceClose} />
+                </Popover>
               </div>
               <div className="h-[50px] overflow-auto">
                 <h1 className="text-sm m-0 py-2">
