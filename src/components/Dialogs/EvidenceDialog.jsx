@@ -2,7 +2,7 @@ import { Close, Send } from "@mui/icons-material";
 import React, { useState } from "react";
 import fileUpload from "../../assets/icons/fileUpload.svg";
 
-const EvidenceDialog = ({handleEvidenceClose}) => {
+const EvidenceDialog = ({ handleEvidenceClose }) => {
   const [evidence, setEvidence] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
@@ -33,15 +33,15 @@ const EvidenceDialog = ({handleEvidenceClose}) => {
             Add your evidence in textual form or upload your document
           </h3>
         </div>
-        <div>
-          <Close  />
+        <div className="cursor-pointer" onClick={handleEvidenceClose}>
+          <Close />
         </div>
       </section>
       {/* header ends */}
 
       <section className="w-full">
         <textarea
-        required
+          required
           value={evidence}
           onChange={handleChangeEvidence}
           placeholder="Add your Evidence"

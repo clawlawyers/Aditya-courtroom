@@ -537,7 +537,6 @@ const AiSidebar = () => {
 
   return (
     <>
-    
       <div className="flex flex-col gap-3 h-screen py-3 pl-3">
         {/* top container */}
         <div className="bg-[#008080] h-[30vh] pt-1 px-4 pb-4 border-2 border-black rounded gap-2 flex flex-col">
@@ -592,10 +591,14 @@ const AiSidebar = () => {
                   open={Boolean(anchorEl)}
                   onClose={handleMenuClose}
                 >
-                  <MenuItem onClick={() => {
-                    handleMenuClose();
-                    setEditDialog(true)
-                  }}>Edit</MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      handleMenuClose();
+                      setEditDialog(true);
+                    }}
+                  >
+                    Edit
+                  </MenuItem>
                   <MenuItem onClick={handleEvidenceClick}>
                     Add Evidences
                   </MenuItem>
@@ -621,7 +624,7 @@ const AiSidebar = () => {
                     },
                   }}
                 >
-                  <EvidenceDialog onClose={handleEvidenceClose} />
+                  <EvidenceDialog handleEvidenceClose={handleEvidenceClose} />
                 </Popover>
               </div>
               <div className="h-[50px] overflow-auto">
@@ -632,7 +635,6 @@ const AiSidebar = () => {
             </div>
           </div>
           <TimerComponent EndSessionToCourtroom={EndSessionToCourtroom} />
-
         </div>
         {/* bottom container */}
         <div className="flex-1 overflow-auto border-2 border-black rounded flex flex-col relative px-4 py-4 gap-2 justify-between">
