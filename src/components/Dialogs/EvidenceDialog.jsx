@@ -1,10 +1,14 @@
 import { Close, Send } from "@mui/icons-material";
 import React, { useState } from "react";
 import fileUpload from "../../assets/icons/fileUpload.svg";
+import toast from "react-hot-toast";
+import { NODE_API_ENDPOINT } from "../../utils/utils";
+import { useSelector } from "react-redux";
 
 const EvidenceDialog = ({ handleEvidenceClose }) => {
   const [evidence, setEvidence] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const currentUser = useSelector((state) => state.user.user);
 
   const handleChangeEvidence = (e) => {
     setEvidence(e.target.value);
@@ -15,10 +19,46 @@ const EvidenceDialog = ({ handleEvidenceClose }) => {
     setUploadedFiles((prevFiles) => [...prevFiles, ...files]);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // Handle the submission of evidence and uploaded files
     console.log("Evidence:", evidence);
     console.log("Uploaded Files:", uploadedFiles);
+    try {
+      const fetchData = await fetch(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/evidence`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+          body: JSON.stringify({ action: "Generate", evidence_text: evidence }),
+        }
+      );
+
+      if (!fetchData.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await fetchData.json();
+      console.log("API response:", data);
+      toast.success("Evidence submitted successfully");
+      handleEvidenceClose();
+
+      // Clear the evidence and uploaded files
+      setEvidence("");
+      setUploadedFiles([]);
+
+      // Reset the form
+      document.getElementById("evidence-form")?.reset();
+
+      // Update the evidence list with the new evidence
+
+      // Example: updateEvidenceList(data.evidence)
+    } catch (error) {
+      console.error("Error in submitting evidence", error);
+      toast.error("Error in submitting evidence", error);
+    }
   };
 
   return (
