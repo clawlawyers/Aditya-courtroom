@@ -149,6 +149,7 @@ const AiSidebar = () => {
 
   const [showAskLegalGPT, setShowAskLegalGPT] = useState(false);
   const [promptArr, setPromptArr] = useState([]);
+  console.log(promptArr);
   const [askLegalGptPrompt, setAskLegalGptPrompt] = useState(null);
   const [searchQuery, setSearchQuery] = useState(false);
   const [evidenceAnchorEl, setEvidenceAnchorEl] = useState(null);
@@ -363,7 +364,7 @@ const AiSidebar = () => {
             }
           );
 
-          console.log("response is ", response.data.data.draft.detailed_draft);
+          // console.log("response is ", response.data.data.draft.detailed_draft);
           setFirstDraft(response.data.data.draft.detailed_draft);
         } catch (error) {
           toast.error("Error in getting first draft");
@@ -561,19 +562,20 @@ const AiSidebar = () => {
 
       const data = JSON.parse(responseData.data.fetchedAskQuery.answer);
 
-      console.log(data.response);
+      console.log(data);
 
       setPromptArr([
         ...promptArr,
         {
           prompt: askLegalGptPrompt,
-          promptResponse: data.response,
+          promptResponse: data,
         },
       ]);
     } catch (error) {
       console.error("Error in getting response:", error);
       toast.error("Error in getting response");
     }
+    setAskLegalGptPrompt(null);
   };
 
   return (
@@ -1366,6 +1368,13 @@ const AiSidebar = () => {
                   onClick={() => {
                     setSearchQuery(true);
                     getLegalGptResponse();
+                    setPromptArr([
+                      ...promptArr,
+                      {
+                        prompt: askLegalGptPrompt,
+                        promptResponse: null,
+                      },
+                    ]);
                     setAskLegalGptPrompt(null);
                   }}
                   className="px-3 rounded"
@@ -1378,7 +1387,7 @@ const AiSidebar = () => {
               </div>
             </div>
           ) : (
-            <div className="h-screen flex flex-col border-2 border-white rounded w-2/4 bg-[#222222]">
+            <div className="h-screen flex flex-col border-2 border-white rounded w-2/4 bg-[#222222] justify-between">
               <div className="flex justify-between">
                 <div className="flex gap-2 py-3 px-4">
                   <h3 className="text-xl text-[#00FFA3]">LegalGPT</h3>
@@ -1409,11 +1418,11 @@ const AiSidebar = () => {
                   </svg>
                 </div>
               </div>
-              <div className="px-4 h-full flex flex-col justify-between">
-                <div>
+              <div className="flex-1 px-4 h-full flex flex-col overflow-auto">
+                <div className="">
                   {promptArr.length > 0 &&
                     promptArr.map((x, index) => (
-                      <div key={index}>
+                      <div className="" key={index}>
                         <div className="flex flex-col">
                           <div className="flex gap-3">
                             <svg
@@ -1443,34 +1452,35 @@ const AiSidebar = () => {
                       </div>
                     ))}
                 </div>
-                <div className="flex gap-2 py-3">
-                  <input
-                    className="flex-1 p-2 rounded text-black"
-                    placeholder="Enter Your Query Here"
-                    value={askLegalGptPrompt}
-                    onChange={(e) => setAskLegalGptPrompt(e.target.value)}
-                  />
-                  <motion.button
-                    whileTap={{ scale: "0.95" }}
-                    onClick={() => {
-                      setSearchQuery(true);
-                      setPromptArr([
-                        ...promptArr,
-                        {
-                          prompt: askLegalGptPrompt,
-                          promptResponse: null,
-                        },
-                      ]);
-                      setAskLegalGptPrompt(null);
-                    }}
-                    className="px-3 rounded"
-                    style={{
-                      background: "linear-gradient(180deg, #008080,#001A1A)",
-                    }}
-                  >
-                    Send
-                  </motion.button>
-                </div>
+              </div>
+              <div className="px-4 flex gap-2 py-3">
+                <input
+                  className="flex-1 p-2 rounded text-black"
+                  placeholder="Enter Your Query Here"
+                  value={askLegalGptPrompt}
+                  onChange={(e) => setAskLegalGptPrompt(e.target.value)}
+                />
+                <motion.button
+                  whileTap={{ scale: "0.95" }}
+                  onClick={() => {
+                    setSearchQuery(true);
+                    getLegalGptResponse();
+                    setPromptArr([
+                      ...promptArr,
+                      {
+                        prompt: askLegalGptPrompt,
+                        promptResponse: null,
+                      },
+                    ]);
+                    setAskLegalGptPrompt(null);
+                  }}
+                  className="px-3 rounded"
+                  style={{
+                    background: "linear-gradient(180deg, #008080,#001A1A)",
+                  }}
+                >
+                  Send
+                </motion.button>
               </div>
             </div>
           )}
