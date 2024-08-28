@@ -28,6 +28,8 @@ import { MoreVert } from "@mui/icons-material";
 import EvidenceDialog from "../../components/Dialogs/EvidenceDialog";
 const TimerComponent = React.memo(({ EndSessionToCourtroom }) => {
   const slotTimeInterval = useSelector((state) => state.user.user.slotTime);
+  const totalHoursLeft = useSelector((state) => state.user.user.totalHours);
+  // console.log(totalHoursLeft);
   const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
   const [countdownOver, setCountDownOver] = useState(false);
 
@@ -58,16 +60,17 @@ const TimerComponent = React.memo(({ EndSessionToCourtroom }) => {
         className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded"
         style={{ borderColor: timeLeft.minutes < 5 ? "red" : "white" }}
       >
-        <h1 className="text-sm m-0">Time Remaining:</h1>
+        <h1 className="text-sm m-0">Total Hours:</h1>
         <h1
           className="text-sm m-0 font-semibold"
           style={{ color: timeLeft.minutes < 5 ? "red" : "#008080" }}
         >
-          {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
-          {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds}
+          {/* {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
+          {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds} */}
+          {totalHoursLeft} hr
         </h1>
       </div>
-      <div
+      {/* <div
         className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded"
         style={{ borderColor: timeLeft.minutes < 5 ? "red" : "white" }}
       >
@@ -79,7 +82,7 @@ const TimerComponent = React.memo(({ EndSessionToCourtroom }) => {
           {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
           {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds}
         </h1>
-      </div>
+      </div> */}
       {countdownOver ? (
         <div
           style={{
@@ -575,7 +578,7 @@ const AiSidebar = () => {
       console.error("Error in getting response:", error);
       toast.error("Error in getting response");
     }
-    setAskLegalGptPrompt(null);
+    // setAskLegalGptPrompt(null);
   };
 
   return (
@@ -763,7 +766,7 @@ const AiSidebar = () => {
               </div>
             </motion.div>
             <motion.div
-              onClick={() => setShowAskLegalGPT(true)}
+              // onClick={() => setShowAskLegalGPT(true)}
               whileTap={{ scale: "0.95" }}
               whileHover={{ scale: "1.01" }}
               style={{
