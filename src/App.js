@@ -32,7 +32,7 @@ import AllowedLogin from "./CourtRoom/admin/AllowedLogin.jsx";
 
 function App() {
   const BATCH_INTERVAL = 60 * 1000;
-  const currentUser = useSelector((state) => state.auth.user);
+  const currentUser = useSelector((state) => state.user.user);
 
   const currentUserRef = useRef(currentUser);
 
@@ -43,7 +43,7 @@ function App() {
   const updateEngagementTime = useCallback(async (engagementData) => {
     try {
       await axios.post(
-        `${NODE_API_ENDPOINT}/cron/engagement/time`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/storeTime`,
         engagementData
       );
     } catch (error) {
