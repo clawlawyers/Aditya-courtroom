@@ -176,6 +176,10 @@ const AiSidebar = () => {
     navigate("/court-room");
   };
 
+  const formatText = (text) => {
+    return text.replace(/\\n\\n/g, "<br/><br/>").replace(/\\n/g, "  <br/>");
+  };
+
   const getReventCaseLaw = async () => {
     setRelevantCaseLoading(true);
 
@@ -193,9 +197,12 @@ const AiSidebar = () => {
       }
 
       const data = await fetchedData.json();
+      const formattedData = formatText(
+        data.data.relevantCases.relevant_case_law
+      );
       console.log(data.data.relevantCases.relevant_case_law);
       setRelevantCaseLoading(false);
-      setRelevantLawsArr(data.data.relevantCases.relevant_case_law);
+      setRelevantLawsArr(formattedData);
     } catch (error) {
       toast.error("Failed to fetch relevant case laws");
       console.error(error);
@@ -1070,7 +1077,7 @@ const AiSidebar = () => {
                   <div className="h-[80vh] w-1 bg-neutral-200/40" />
                   <div className="flex flex-col justify-between h-full w-full gap-4 ">
                     {showRelevantLaws ? (
-                      <>
+                      <div className="overflow-auto border-2 border-white rounded bg-white text-black p-2">
                         {relevantCaseLoading ? (
                           <div className="flex justify-center items-center">
                             <img
@@ -1080,11 +1087,15 @@ const AiSidebar = () => {
                             />
                           </div>
                         ) : (
-                          <p className="h-[60vh] border-2 border-white rounded">
-                            {relevantLawsArr}
-                          </p>
+                          <p
+                            className="h-[60vh]"
+                            dangerouslySetInnerHTML={{
+                              __html: relevantLawsArr,
+                            }}
+                          />
+                          // {relevantLawsArr}</p>
                         )}
-                      </>
+                      </div>
                     ) : (
                       <div className="flex flex-col w-full gap-2">
                         <img className="" src={logo} alt="logo" />
@@ -1094,7 +1105,7 @@ const AiSidebar = () => {
                     <div className="grid grid-cols-2 gap-2 relative">
                       {showRelevantLaws ? (
                         <motion.button
-                          // disabled={!relevantLawsArr}
+                          disabled={!relevantLawsArr}
                           className="border border-white rounded-md py-1"
                           onClick={() => setShowRelevantLaws(false)}
                         >
