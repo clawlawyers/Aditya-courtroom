@@ -176,6 +176,32 @@ const AiSidebar = () => {
     navigate("/court-room");
   };
 
+  const getReventCaseLaw = async () => {
+    setRelevantCaseLoading(true);
+
+    try {
+      const fetchedData = await fetch(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_case_law`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (!fetchedData.ok) {
+        toast.error("Failed to fetch relevant case laws");
+        return;
+      }
+
+      const data = await fetchedData.json();
+      console.log(data.data.relevantCases.relevant_case_law);
+      setRelevantCaseLoading(false);
+      setRelevantLawsArr(data.data.relevantCases.relevant_case_law);
+    } catch (error) {
+      toast.error("Failed to fetch relevant case laws");
+      console.error(error);
+    }
+  };
+
   const ExitToCourtroom = async () => {
     localStorage.removeItem("hasSeenSplash");
     localStorage.setItem("FileUploaded", false);
@@ -1077,7 +1103,10 @@ const AiSidebar = () => {
                       ) : (
                         <motion.button
                           disabled={!relevantCaseLawsAccess}
-                          onClick={() => setShowRelevantLaws(true)}
+                          onClick={() => {
+                            setShowRelevantLaws(true);
+                            getReventCaseLaw();
+                          }}
                           className="border border-white rounded-md py-1"
                           onHoverStart={() =>
                             !relevantCaseLawsAccess
