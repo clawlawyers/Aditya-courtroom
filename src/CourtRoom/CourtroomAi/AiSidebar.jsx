@@ -26,116 +26,20 @@ import toast from "react-hot-toast";
 import loader from "../../assets/images/aiAssistantLoading.gif";
 import { MoreVert } from "@mui/icons-material";
 import EvidenceDialog from "../../components/Dialogs/EvidenceDialog";
-const TimerComponent = React.memo(({ EndSessionToCourtroom }) => {
-  const slotTimeInterval = useSelector((state) => state.user.user.slotTime);
+
+const TimerComponent = React.memo(() => {
   const totalHoursLeft = useSelector((state) => state.user.user.totalHours);
-  // console.log(totalHoursLeft);
-  const [timeLeft, setTimeLeft] = useState({ minutes: 0, seconds: 0 });
-  const [countdownOver, setCountDownOver] = useState(false);
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      const minutesLeft = 60 - now.getMinutes() - 1;
-      const secondsLeft = 60 - now.getSeconds();
-      setTimeLeft({ minutes: minutesLeft, seconds: secondsLeft });
-    };
-
-    calculateTimeLeft();
-
-    const timer = setInterval(calculateTimeLeft, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    if (slotTimeInterval < new Date().getHours()) {
-      setCountDownOver(true);
-    }
-  });
 
   return (
     <>
-      <div
-        className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded"
-        style={{ borderColor: timeLeft.minutes < 5 ? "red" : "white" }}
-      >
+      <div className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded">
         <h1 className="text-sm m-0">Total Hours:</h1>
-        <h1
-          className="text-sm m-0 font-semibold"
-          style={{ color: timeLeft.minutes < 5 ? "red" : "#008080" }}
-        >
+        <h1 className="text-sm m-0 font-semibold">
           {/* {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
           {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds} */}
           {totalHoursLeft} hr
         </h1>
       </div>
-      {/* <div
-        className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded"
-        style={{ borderColor: timeLeft.minutes < 5 ? "red" : "white" }}
-      >
-        <h1 className="text-sm m-0">Time Used :</h1>
-        <h1
-          className="text-sm m-0 font-semibold"
-          style={{ color: timeLeft.minutes < 5 ? "red" : "#008080" }}
-        >
-          {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
-          {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds}
-        </h1>
-      </div> */}
-      {countdownOver ? (
-        <div
-          style={{
-            width: "100%",
-            height: "100vh",
-            position: "absolute",
-            left: "0",
-            right: "0",
-            backgroundColor: "rgba(0, 0, 0, 0.1)",
-            backdropFilter: "blur(3px)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: "20",
-          }}
-        >
-          <div
-            className="flex flex-col justify-center gap-20 p-5"
-            style={{
-              background: "linear-gradient(to right,#0e1118,#008080)",
-              height: "450px",
-              width: "900px",
-              border: "4px solid red",
-              borderRadius: "10px",
-            }}
-          >
-            <div className="flex flex-col justify-center items-center gap-10">
-              <img className="w-28 h-28" alt="clock" src={countDown} />
-              <h1 className="text-3xl">Your Courtroom Time is Over</h1>
-            </div>
-            <div className="flex justify-center">
-              <motion.button
-                onClick={() => EndSessionToCourtroom()}
-                whileTap={{ scale: "0.95" }}
-                className="border border-white rounded-lg py-2 px-8"
-              >
-                Go Back To Homepage
-              </motion.button>
-              {/* <Link to={"/courtroom-ai/verdict"}>
-                <motion.button
-                  onClick={() => setCountDownOver(false)}
-                  whileTap={{ scale: "0.95" }}
-                  className="border border-white rounded-lg py-2 px-8 text-white"
-                >
-                  View Verdict
-                </motion.button>
-              </Link> */}
-            </div>
-          </div>
-        </div>
-      ) : (
-        ""
-      )}
     </>
   );
 });
@@ -242,6 +146,9 @@ const AiSidebar = () => {
   const relevantCaseLawsAccess = useSelector(
     (state) => state.user.user.courtroomFeatures.RelevantCaseLaws
   );
+  const legalGptAccess = useSelector(
+    (state) => state.user.user.courtroomFeatures.LegalGPT
+  );
 
   const [editDialog, setEditDialog] = useState(false);
   const [firstDraftDialog, setFirstDraftDialog] = useState(false);
@@ -256,6 +163,10 @@ const AiSidebar = () => {
   const [aiAccessHover, setAiAccessHover] = useState(false);
   const [draftAccessHover, setDraftAccessHover] = useState(false);
   const [relevantCaseAccessHover, setRelevantCaseAccessHover] = useState(false);
+  const [legalGptAccessHover, setLegalGptAccessHover] = useState(false);
+  const [showRelevantLaws, setShowRelevantLaws] = useState(false);
+  const [relevantCaseLoading, setRelevantCaseLoading] = useState(false);
+  const [relevantLawsArr, setRelevantLawsArr] = useState(null);
 
   useEffect(() => {
     setText(overViewDetails);
@@ -350,6 +261,17 @@ const AiSidebar = () => {
     setFirstDraftDialog(true);
   };
 
+  // const formatText = (text) => {
+  //   return text.replace(/\\n\\n/g, "<br/><br/>").replace(/\\n/g, "  <br/>");
+  // };
+
+  // function escapeHTML(html) {
+  //   const text = document.createTextNode(html);
+  //   const div = document.createElement("div");
+  //   div.appendChild(text);
+  //   return div.innerHTML;
+  // }
+
   useEffect(() => {
     if (overViewDetails !== "") {
       setisApi(true);
@@ -368,6 +290,11 @@ const AiSidebar = () => {
           );
 
           // console.log("response is ", response.data.data.draft.detailed_draft);
+          // const formattedDraftText = formatText(
+          //   response.data.data.draft.detailed_draft
+          // );
+          // const htmlContent = formattedDraftText;
+          // const escapedContent = escapeHTML(htmlContent);
           setFirstDraft(response.data.data.draft.detailed_draft);
         } catch (error) {
           toast.error("Error in getting first draft");
@@ -581,6 +508,16 @@ const AiSidebar = () => {
     // setAskLegalGptPrompt(null);
   };
 
+  const tapAnimations = {
+    true: { scale: 0.95 },
+    false: {},
+  };
+
+  const hoverAnimations = {
+    true: { scale: 1.01 },
+    false: {},
+  };
+
   return (
     <>
       <div className="flex flex-col gap-3 h-screen py-3 pl-3">
@@ -766,9 +703,15 @@ const AiSidebar = () => {
               </div>
             </motion.div>
             <motion.div
-              // onClick={() => setShowAskLegalGPT(true)}
-              whileTap={{ scale: "0.95" }}
-              whileHover={{ scale: "1.01" }}
+              onClick={() => (legalGptAccess ? setShowAskLegalGPT(true) : null)}
+              whileTap={tapAnimations[legalGptAccess ? "true" : "false"]}
+              whileHover={hoverAnimations[legalGptAccess ? "true" : "false"]}
+              onHoverStart={() =>
+                !legalGptAccess ? setLegalGptAccessHover(true) : null
+              }
+              onHoverEnd={() =>
+                !legalGptAccess ? setLegalGptAccessHover(false) : null
+              }
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -796,6 +739,13 @@ const AiSidebar = () => {
                   <path d="M14 4h-13v18h20v-11h1v12h-22v-20h14v1zm10 5h-1v-6.293l-11.646 11.647-.708-.708 11.647-11.646h-6.293v-1h8v8z" />
                 </svg>
               </div>
+              {legalGptAccessHover ? (
+                <h1 className="z-30 absolute text-xs text-white left-7 -top-9 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                  To Enable It : Contact Sales
+                </h1>
+              ) : (
+                ""
+              )}
             </motion.div>
           </div>
           {aiAssistantAccess ? (
@@ -1092,28 +1042,57 @@ const AiSidebar = () => {
                     </div>
                   </div>
                   <div className="h-[80vh] w-1 bg-neutral-200/40" />
-                  <div className="flex flex-col justify-between h-[80vh] py-32 w-full gap-4 ">
-                    <div className="flex flex-col w-full gap-2">
-                      <img className="" src={logo} alt="logo" />
-                      <h3 className=" text-center">Draft Preview</h3>
-                    </div>
+                  <div className="flex flex-col justify-between h-full w-full gap-4 ">
+                    {showRelevantLaws ? (
+                      <>
+                        {relevantCaseLoading ? (
+                          <div className="flex justify-center items-center">
+                            <img
+                              className="h-40 w-40 my-10"
+                              src={loader}
+                              alt="loader"
+                            />
+                          </div>
+                        ) : (
+                          <p className="h-[60vh] border-2 border-white rounded">
+                            {relevantLawsArr}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <div className="flex flex-col w-full gap-2">
+                        <img className="" src={logo} alt="logo" />
+                        <h3 className=" text-center">Draft Preview</h3>
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 gap-2 relative">
-                      <motion.button
-                        disabled={!relevantCaseLawsAccess}
-                        className="border border-white rounded-md py-1"
-                        onHoverStart={() =>
-                          !relevantCaseLawsAccess
-                            ? setRelevantCaseAccessHover(true)
-                            : ""
-                        }
-                        onHoverEnd={() =>
-                          !relevantCaseLawsAccess
-                            ? setRelevantCaseAccessHover(false)
-                            : ""
-                        }
-                      >
-                        Relevant Case Laws
-                      </motion.button>
+                      {showRelevantLaws ? (
+                        <motion.button
+                          // disabled={!relevantLawsArr}
+                          className="border border-white rounded-md py-1"
+                          onClick={() => setShowRelevantLaws(false)}
+                        >
+                          Go Back
+                        </motion.button>
+                      ) : (
+                        <motion.button
+                          disabled={!relevantCaseLawsAccess}
+                          onClick={() => setShowRelevantLaws(true)}
+                          className="border border-white rounded-md py-1"
+                          onHoverStart={() =>
+                            !relevantCaseLawsAccess
+                              ? setRelevantCaseAccessHover(true)
+                              : ""
+                          }
+                          onHoverEnd={() =>
+                            !relevantCaseLawsAccess
+                              ? setRelevantCaseAccessHover(false)
+                              : ""
+                          }
+                        >
+                          Relevant Case Laws
+                        </motion.button>
+                      )}
                       <button
                         onClick={() => dowloadFirstDraft()}
                         className="border border-white rounded-md py-1"
