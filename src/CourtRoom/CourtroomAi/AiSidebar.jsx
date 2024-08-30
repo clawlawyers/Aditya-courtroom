@@ -229,6 +229,9 @@ const AiSidebar = () => {
   const legalGptAccess = useSelector(
     (state) => state.user.user.courtroomFeatures.LegalGPT
   );
+  const evidenceAccess = useSelector(
+    (state) => state.user.user.courtroomFeatures.Evidences
+  );
 
   const [editDialog, setEditDialog] = useState(false);
   const [firstDraftDialog, setFirstDraftDialog] = useState(false);
@@ -247,6 +250,8 @@ const AiSidebar = () => {
   const [showRelevantLaws, setShowRelevantLaws] = useState(false);
   const [relevantCaseLoading, setRelevantCaseLoading] = useState(false);
   const [relevantLawsArr, setRelevantLawsArr] = useState(null);
+  const [evidenceAccessHover, setEvidenceAccessHover] = useState(false);
+
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -672,7 +677,7 @@ const AiSidebar = () => {
           </motion.div>
           <div className="flex-1  overflow-auto">
             <div className="flex flex-col gap-2">
-              <div className="flex flex-row justify-between items-center ">
+              <div className="flex flex-row justify-between items-center">
                 <p className="text-[#00FFA3] text-[18px] m-0">
                   Case Details :{" "}
                 </p>
@@ -684,56 +689,79 @@ const AiSidebar = () => {
                 >
                   Edit
                 </motion.button> */}
-                <IconButton
-                  aria-label="more"
-                  aria-controls="long-menu"
-                  aria-haspopup="true"
-                  onClick={handleMenuOpen}
-                >
-                  <MoreVert />
-                </IconButton>
-                <Menu
-                  id="long-menu"
-                  anchorEl={anchorEl}
-                  keepMounted
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                >
-                  <MenuItem
-                    onClick={() => {
-                      handleMenuClose();
-                      setEditDialog(true);
+                <div>
+                  <IconButton
+                    aria-label="more"
+                    aria-controls="long-menu"
+                    aria-haspopup="true"
+                    onClick={handleMenuOpen}
+                  >
+                    <MoreVert />
+                  </IconButton>
+                  <div className="absolute">
+                    {evidenceAccessHover ? (
+                      <h1 className="z-50 absolute text-xs -left-[180px] top-[40px] bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                        To Enable It : Contact Sales
+                      </h1>
+                    ) : (
+                      ""
+                    )}
+                    <Menu
+                      id="long-menu"
+                      anchorEl={anchorEl}
+                      keepMounted
+                      open={Boolean(anchorEl)}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItem
+                        onClick={() => {
+                          handleMenuClose();
+                          setEditDialog(true);
+                        }}
+                      >
+                        Edit
+                      </MenuItem>
+                      <MenuItem
+                        onClick={evidenceAccess ? handleEvidenceClick : null}
+                      >
+                        <motion.p
+                          className="m-0"
+                          onHoverStart={() =>
+                            evidenceAccess ? setEvidenceAccessHover(true) : ""
+                          }
+                          onHoverEnd={() =>
+                            evidenceAccess ? setEvidenceAccessHover(false) : ""
+                          }
+                        >
+                          Add Evidences
+                        </motion.p>
+                      </MenuItem>
+                      {/* <MenuItem>Save</MenuItem> */}
+                    </Menu>
+                  </div>
+
+                  <Popover
+                    open={Boolean(evidenceAnchorEl)}
+                    anchorEl={evidenceAnchorEl}
+                    onClose={handleEvidenceClose}
+                    anchorOrigin={{
+                      vertical: "center",
+                      horizontal: "right",
+                    }}
+                    transformOrigin={{
+                      vertical: "center",
+                      horizontal: "left",
+                    }}
+                    sx={{
+                      "& .MuiPaper-root": {
+                        width: "600px", // Adjust the width as needed
+                        padding: "16px", // Adjust the padding as needed
+                      },
                     }}
                   >
-                    Edit
-                  </MenuItem>
-                  <MenuItem onClick={handleEvidenceClick}>
-                    Add Evidences
-                  </MenuItem>
-                  {/* <MenuItem>Save</MenuItem> */}
-                </Menu>
-
-                <Popover
-                  open={Boolean(evidenceAnchorEl)}
-                  anchorEl={evidenceAnchorEl}
-                  onClose={handleEvidenceClose}
-                  anchorOrigin={{
-                    vertical: "center",
-                    horizontal: "right",
-                  }}
-                  transformOrigin={{
-                    vertical: "center",
-                    horizontal: "left",
-                  }}
-                  sx={{
-                    "& .MuiPaper-root": {
-                      width: "600px", // Adjust the width as needed
-                      padding: "16px", // Adjust the padding as needed
-                    },
-                  }}
-                >
-                  <EvidenceDialog handleEvidenceClose={handleEvidenceClose} />
-                </Popover>
+                    <EvidenceDialog handleEvidenceClose={handleEvidenceClose} />
+                  </Popover>
+                </div>
               </div>
               <div className="h-[50px] overflow-auto">
                 <h1 className="text-sm m-0 py-2">
