@@ -729,10 +729,10 @@ const AiSidebar = () => {
                         <motion.p
                           className="m-0"
                           onHoverStart={() =>
-                            evidenceAccess ? setEvidenceAccessHover(true) : ""
+                            !evidenceAccess ? setEvidenceAccessHover(true) : ""
                           }
                           onHoverEnd={() =>
-                            evidenceAccess ? setEvidenceAccessHover(false) : ""
+                            !evidenceAccess ? setEvidenceAccessHover(false) : ""
                           }
                         >
                           Add Evidences
