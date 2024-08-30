@@ -342,6 +342,8 @@ const AiSidebar = () => {
   };
 
   const saveHistory = async () => {
+    setRelevantLawsArr(null);
+    setShowRelevantLaws(false);
     try {
       if (overViewDetails !== "NA") {
         await axios.post(
@@ -1151,7 +1153,9 @@ const AiSidebar = () => {
             >
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
                 <svg
-                  onClick={() => setFirstDraftDialog(false)}
+                  onClick={() => {
+                    setFirstDraftDialog(false);
+                  }}
                   style={{ margin: "20px", cursor: "pointer" }}
                   width="30"
                   height="30"
