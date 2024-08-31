@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import logo from "../../assets/images/claw-login.png";
 import Styles from "./AiSidebar.module.css";
 import { motion } from "framer-motion";
@@ -27,19 +27,99 @@ import loader from "../../assets/images/aiAssistantLoading.gif";
 import { MoreVert } from "@mui/icons-material";
 import EvidenceDialog from "../../components/Dialogs/EvidenceDialog";
 
-const TimerComponent = React.memo(() => {
-  const totalHoursLeft = useSelector((state) => state.user.user.totalHours);
+const TimerComponent = React.memo(({ ExitToCourtroom }) => {
+  const totalHours = useSelector((state) => state.user.user.totalHours);
+  const totalHoursUsed = useSelector((state) => state.user.user.totalUsedHours);
+  const minutesLeft = parseInt(totalHoursUsed.toString().split(".")[1]) * 60;
+  const firstTwoDigits = parseInt(minutesLeft.toString().slice(0, 2));
+
+  const initialTime = parseInt(totalHoursUsed) * 3600 + firstTwoDigits * 60;
+
+  const [time, setTime] = useState(initialTime);
+  const [timeOver, setTimeOver] = useState(false);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTime((prevTime) => prevTime + 1);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    if (totalHours <= parseInt(totalHoursUsed)) {
+      setTimeOver(true);
+    }
+  });
+
+  const formatTime = (seconds) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}:${String(secs).padStart(2, "0")}`;
+  };
 
   return (
     <>
       <div className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded">
-        <h1 className="text-sm m-0">Total Hours:</h1>
+        <h1 className="text-sm m-0">Total Time:</h1>
+        <h1 className="text-sm m-0 font-semibold">{totalHours} hr</h1>
+      </div>
+      <div className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded">
+        <h1 className="text-sm m-0">Time Used Up:</h1>
         <h1 className="text-sm m-0 font-semibold">
           {/* {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
           {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds} */}
-          {totalHoursLeft} hr
+          {formatTime(time)}
         </h1>
       </div>
+      {timeOver ? (
+        <div
+          style={{
+            width: "100%",
+            height: "100vh",
+            position: "absolute",
+            left: "0",
+            right: "0",
+            backgroundColor: "rgba(0, 0, 0, 0.1)",
+            backdropFilter: "blur(3px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: "20",
+          }}
+        >
+          <div
+            className="flex flex-col justify-center gap-20 p-5"
+            style={{
+              background: "linear-gradient(to right,#0e1118,#008080)",
+              height: "450px",
+              width: "900px",
+              border: "4px solid red",
+              borderRadius: "10px",
+            }}
+          >
+            <div className="flex flex-col justify-center items-center gap-10">
+              <img className="w-28 h-28" alt="clock" src={countDown} />
+              <h1 className="text-3xl">Your Courtroom Time is Over</h1>
+            </div>
+            <div className="flex justify-center">
+              <motion.button
+                onClick={() => ExitToCourtroom()}
+                whileTap={{ scale: "0.95" }}
+                className="border border-white rounded-lg py-2 px-8"
+              >
+                Go Back To Homepage
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
     </>
   );
 });
@@ -56,8 +136,8 @@ const AiSidebar = () => {
 
   const [showAskLegalGPT, setShowAskLegalGPT] = useState(false);
   const [promptArr, setPromptArr] = useState([]);
-  console.log(promptArr);
-  const [askLegalGptPrompt, setAskLegalGptPrompt] = useState(null);
+  // console.log(promptArr);
+  const [askLegalGptPrompt, setAskLegalGptPrompt] = useState("");
   const [searchQuery, setSearchQuery] = useState(false);
   const [evidenceAnchorEl, setEvidenceAnchorEl] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -149,6 +229,9 @@ const AiSidebar = () => {
   const legalGptAccess = useSelector(
     (state) => state.user.user.courtroomFeatures.LegalGPT
   );
+  const evidenceAccess = useSelector(
+    (state) => state.user.user.courtroomFeatures.Evidences
+  );
 
   const [editDialog, setEditDialog] = useState(false);
   const [firstDraftDialog, setFirstDraftDialog] = useState(false);
@@ -167,6 +250,17 @@ const AiSidebar = () => {
   const [showRelevantLaws, setShowRelevantLaws] = useState(false);
   const [relevantCaseLoading, setRelevantCaseLoading] = useState(false);
   const [relevantLawsArr, setRelevantLawsArr] = useState(null);
+  const [evidenceAccessHover, setEvidenceAccessHover] = useState(false);
+
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    // Scroll to bottom on component mount and whenever the content changes
+    const element = scrollRef.current;
+    if (element) {
+      element.scrollTop = element.scrollHeight;
+    }
+  }, [promptArr]);
 
   useEffect(() => {
     setText(overViewDetails);
@@ -248,6 +342,8 @@ const AiSidebar = () => {
   };
 
   const saveHistory = async () => {
+    setRelevantLawsArr(null);
+    setShowRelevantLaws(false);
     try {
       if (overViewDetails !== "NA") {
         await axios.post(
@@ -385,7 +481,7 @@ const AiSidebar = () => {
           }
         );
 
-        console.log(overView.data.data.case_overview);
+        // console.log(overView.data.data.case_overview);
         if (overView.data.data.case_overview === "NA") {
           dispatch(setOverview(""));
         } else {
@@ -526,7 +622,7 @@ const AiSidebar = () => {
 
       const responseData = await getResponse.json();
 
-      const data = JSON.parse(responseData.data.fetchedAskQuery.answer);
+      const data = responseData.data.fetchedAskQuery.answer;
 
       console.log(data);
 
@@ -558,7 +654,7 @@ const AiSidebar = () => {
     <>
       <div className="flex flex-col gap-3 h-screen py-3 pl-3">
         {/* top container */}
-        <div className="bg-[#008080] h-[30vh] pt-1 px-4 pb-4 border-2 border-black rounded gap-2 flex flex-col">
+        <div className="bg-[#008080] h-[35vh] pt-1 px-4 pb-4 border-2 border-black rounded gap-2 flex flex-col">
           <motion.div
             className="max-w-fit rounded-lg flex gap-2 items-center pt-2 cursor-pointer"
             whileTap={{ scale: "0.95" }}
@@ -583,7 +679,7 @@ const AiSidebar = () => {
           </motion.div>
           <div className="flex-1  overflow-auto">
             <div className="flex flex-col gap-2">
-              <div className="flex flex-row justify-between items-center ">
+              <div className="flex flex-row justify-between items-center">
                 <p className="text-[#00FFA3] text-[18px] m-0">
                   Case Details :{" "}
                 </p>
@@ -595,56 +691,79 @@ const AiSidebar = () => {
                 >
                   Edit
                 </motion.button> */}
-                <IconButton
-                  aria-label="more"
-                  aria-controls="long-menu"
-                  aria-haspopup="true"
-                  onClick={handleMenuOpen}
-                >
-                  <MoreVert />
-                </IconButton>
-                <Menu
-                  id="long-menu"
-                  anchorEl={anchorEl}
-                  keepMounted
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                >
-                  <MenuItem
-                    onClick={() => {
-                      handleMenuClose();
-                      setEditDialog(true);
+                <div>
+                  <IconButton
+                    aria-label="more"
+                    aria-controls="long-menu"
+                    aria-haspopup="true"
+                    onClick={handleMenuOpen}
+                  >
+                    <MoreVert />
+                  </IconButton>
+                  <div className="absolute">
+                    {evidenceAccessHover ? (
+                      <h1 className="z-50 absolute text-xs -left-[180px] top-[40px] bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                        To Enable It : Contact Sales
+                      </h1>
+                    ) : (
+                      ""
+                    )}
+                    <Menu
+                      id="long-menu"
+                      anchorEl={anchorEl}
+                      keepMounted
+                      open={Boolean(anchorEl)}
+                      onClose={handleMenuClose}
+                    >
+                      <MenuItem
+                        onClick={() => {
+                          handleMenuClose();
+                          setEditDialog(true);
+                        }}
+                      >
+                        Edit
+                      </MenuItem>
+                      <MenuItem
+                        onClick={evidenceAccess ? handleEvidenceClick : null}
+                      >
+                        <motion.p
+                          className="m-0"
+                          onHoverStart={() =>
+                            !evidenceAccess ? setEvidenceAccessHover(true) : ""
+                          }
+                          onHoverEnd={() =>
+                            !evidenceAccess ? setEvidenceAccessHover(false) : ""
+                          }
+                        >
+                          Add Evidences
+                        </motion.p>
+                      </MenuItem>
+                      {/* <MenuItem>Save</MenuItem> */}
+                    </Menu>
+                  </div>
+
+                  <Popover
+                    open={Boolean(evidenceAnchorEl)}
+                    anchorEl={evidenceAnchorEl}
+                    onClose={handleEvidenceClose}
+                    anchorOrigin={{
+                      vertical: "center",
+                      horizontal: "right",
+                    }}
+                    transformOrigin={{
+                      vertical: "center",
+                      horizontal: "left",
+                    }}
+                    sx={{
+                      "& .MuiPaper-root": {
+                        width: "600px", // Adjust the width as needed
+                        padding: "16px", // Adjust the padding as needed
+                      },
                     }}
                   >
-                    Edit
-                  </MenuItem>
-                  <MenuItem onClick={handleEvidenceClick}>
-                    Add Evidences
-                  </MenuItem>
-                  <MenuItem>Save</MenuItem>
-                </Menu>
-
-                <Popover
-                  open={Boolean(evidenceAnchorEl)}
-                  anchorEl={evidenceAnchorEl}
-                  onClose={handleEvidenceClose}
-                  anchorOrigin={{
-                    vertical: "center",
-                    horizontal: "right",
-                  }}
-                  transformOrigin={{
-                    vertical: "center",
-                    horizontal: "left",
-                  }}
-                  sx={{
-                    "& .MuiPaper-root": {
-                      width: "600px", // Adjust the width as needed
-                      padding: "16px", // Adjust the padding as needed
-                    },
-                  }}
-                >
-                  <EvidenceDialog handleEvidenceClose={handleEvidenceClose} />
-                </Popover>
+                    <EvidenceDialog handleEvidenceClose={handleEvidenceClose} />
+                  </Popover>
+                </div>
               </div>
               <div className="h-[50px] overflow-auto">
                 <h1 className="text-sm m-0 py-2">
@@ -653,7 +772,7 @@ const AiSidebar = () => {
               </div>
             </div>
           </div>
-          <TimerComponent EndSessionToCourtroom={EndSessionToCourtroom} />
+          <TimerComponent ExitToCourtroom={ExitToCourtroom} />
         </div>
         {/* bottom container */}
         <div className="flex-1 overflow-auto border-2 border-black rounded flex flex-col relative px-4 py-4 gap-2 justify-between">
@@ -739,14 +858,16 @@ const AiSidebar = () => {
               </div>
             </motion.div>
             <motion.div
+              className="relative"
               onClick={() => (legalGptAccess ? setShowAskLegalGPT(true) : null)}
+              // onClick={() => setShowAskLegalGPT(true)}
               whileTap={tapAnimations[legalGptAccess ? "true" : "false"]}
               whileHover={hoverAnimations[legalGptAccess ? "true" : "false"]}
               onHoverStart={() =>
-                !legalGptAccess ? setLegalGptAccessHover(true) : null
+                !legalGptAccess ? setLegalGptAccessHover(true) : ""
               }
               onHoverEnd={() =>
-                !legalGptAccess ? setLegalGptAccessHover(false) : null
+                !legalGptAccess ? setLegalGptAccessHover(false) : ""
               }
               style={{
                 display: "flex",
@@ -1016,7 +1137,7 @@ const AiSidebar = () => {
         >
           {firstDraftLoading ? (
             <div
-              className="border-2 border-white rounded-lg w-2/6 h-fit p-2 flex flex-row justify-center items-center"
+              className="border-2 border-white rounded-lg w-1/6 h-fit p-2 flex flex-row justify-center items-center"
               style={{
                 background: "linear-gradient(to right,#0e1118,#008080)",
               }}
@@ -1032,7 +1153,9 @@ const AiSidebar = () => {
             >
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
                 <svg
-                  onClick={() => setFirstDraftDialog(false)}
+                  onClick={() => {
+                    setFirstDraftDialog(false);
+                  }}
                   style={{ margin: "20px", cursor: "pointer" }}
                   width="30"
                   height="30"
@@ -1389,6 +1512,7 @@ const AiSidebar = () => {
                   onChange={(e) => setAskLegalGptPrompt(e.target.value)}
                 />
                 <motion.button
+                  disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
                   onClick={() => {
                     setSearchQuery(true);
@@ -1400,7 +1524,7 @@ const AiSidebar = () => {
                         promptResponse: null,
                       },
                     ]);
-                    setAskLegalGptPrompt(null);
+                    setAskLegalGptPrompt("");
                   }}
                   className="px-3 rounded"
                   style={{
@@ -1443,7 +1567,10 @@ const AiSidebar = () => {
                   </svg>
                 </div>
               </div>
-              <div className="flex-1 px-4 h-full flex flex-col overflow-auto">
+              <div
+                ref={scrollRef}
+                className="flex-1 px-4 h-full flex flex-col overflow-auto"
+              >
                 <div className="">
                   {promptArr.length > 0 &&
                     promptArr.map((x, index) => (
@@ -1486,6 +1613,7 @@ const AiSidebar = () => {
                   onChange={(e) => setAskLegalGptPrompt(e.target.value)}
                 />
                 <motion.button
+                  disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
                   onClick={() => {
                     setSearchQuery(true);
@@ -1497,7 +1625,7 @@ const AiSidebar = () => {
                         promptResponse: null,
                       },
                     ]);
-                    setAskLegalGptPrompt(null);
+                    setAskLegalGptPrompt("");
                   }}
                   className="px-3 rounded"
                   style={{

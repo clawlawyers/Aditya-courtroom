@@ -403,6 +403,11 @@ const CourtroomArgument = () => {
     }
   }, [userArgument]);
 
+  const tapAnimations = {
+    true: { scale: 0.98 },
+    false: {},
+  };
+
   return (
     <div className="flex flex-col p-3 h-screen gap-2">
       {/* top container */}
@@ -506,8 +511,10 @@ const CourtroomArgument = () => {
             </div>
             <motion.div
               className="h-[5vh]"
-              onClick={handleSwap}
-              whileTap={{ scale: "0.98" }}
+              onClick={userArgument.length > 0 ? handleSwap : null}
+              whileTap={
+                tapAnimations[userArgument.length > 0 ? "true" : "false"]
+              }
               style={{
                 display: "flex",
                 justifyContent: "flex-end",
