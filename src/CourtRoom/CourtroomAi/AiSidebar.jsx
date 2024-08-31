@@ -1512,6 +1512,7 @@ const AiSidebar = () => {
                   onChange={(e) => setAskLegalGptPrompt(e.target.value)}
                 />
                 <motion.button
+                  disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
                   onClick={() => {
                     setSearchQuery(true);
@@ -1612,6 +1613,7 @@ const AiSidebar = () => {
                   onChange={(e) => setAskLegalGptPrompt(e.target.value)}
                 />
                 <motion.button
+                  disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
                   onClick={() => {
                     setSearchQuery(true);
