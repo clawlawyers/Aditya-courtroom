@@ -31,11 +31,18 @@ const TimerComponent = React.memo(({ ExitToCourtroom }) => {
   const totalHours = useSelector((state) => state.user.user.totalHours);
   const totalHoursUsed = useSelector((state) => state.user.user.totalUsedHours);
 
-  const minutesLeft = parseInt(totalHoursUsed.toString().split(".")[1]) * 60;
-  const firstTwoDigits = parseInt(minutesLeft.toString().slice(0, 2));
+  // Format totalHours and totalHoursUsed for display
+  const formatHours = (hours) => {
+    if (isNaN(hours) || typeof hours !== "number") {
+      hours = 0;
+    }
+    const hrs = Math.floor(hours);
+    const mins = Math.round((hours - hrs) * 60);
+    return `${hrs} hr ${mins} min`;
+  };
 
-  const initialTime = parseInt(totalHoursUsed) * 3600 + firstTwoDigits * 60;
-  // console.log(initialTime);
+  // Calculate initial time in seconds for timer
+  const initialTime = totalHoursUsed * 3600;
 
   const [time, setTime] = useState(initialTime);
   const [timeOver, setTimeOver] = useState(false);
@@ -49,26 +56,23 @@ const TimerComponent = React.memo(({ ExitToCourtroom }) => {
   }, []);
 
   useEffect(() => {
-    if (totalHours <= parseInt(totalHoursUsed)) {
+    if (totalHours * 3600 <= parseInt(time)) {
       setTimeOver(true);
     }
-  });
+  }, [totalHours, time]);
 
   const formatTime = (seconds) => {
-    // Check if seconds is NaN or not a number
     if (isNaN(seconds) || typeof seconds !== "number") {
       seconds = 0;
     }
-    // console.log(seconds);
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
+    const secs = Math.floor(seconds % 60);
     return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(
       2,
       "0"
     )}:${String(secs).padStart(2, "0")}`;
   };
-
   return (
     <>
       <div className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded">
@@ -225,19 +229,19 @@ const AiSidebar = () => {
   const overViewDetails = useSelector((state) => state.user.caseOverview);
   const currentUser = useSelector((state) => state.user.user);
   const aiAssistantAccess = useSelector(
-    (state) => state.user.user.courtroomFeatures.AiAssistant
+    (state) => state?.user?.user?.courtroomFeatures?.AiAssistant
   );
   const firstDraftAccess = useSelector(
-    (state) => state.user.user.courtroomFeatures.FirstDraft
+    (state) => state?.user?.user?.courtroomFeatures?.FirstDraft
   );
   const relevantCaseLawsAccess = useSelector(
-    (state) => state.user.user.courtroomFeatures.RelevantCaseLaws
+    (state) => state?.user?.user?.courtroomFeatures?.RelevantCaseLaws
   );
   const legalGptAccess = useSelector(
-    (state) => state.user.user.courtroomFeatures.LegalGPT
+    (state) => state?.user?.user?.courtroomFeatures?.LegalGPT
   );
   const evidenceAccess = useSelector(
-    (state) => state.user.user.courtroomFeatures.Evidences
+    (state) => state?.user?.user?.courtroomFeatures?.Evidences
   );
 
   const [editDialog, setEditDialog] = useState(false);
@@ -263,9 +267,9 @@ const AiSidebar = () => {
 
   useEffect(() => {
     // Scroll to bottom on component mount and whenever the content changes
-    const element = scrollRef.current;
+    const element = scrollRef?.current;
     if (element) {
-      element.scrollTop = element.scrollHeight;
+      element.scrollTop = element?.scrollHeight;
     }
   }, [promptArr]);
 

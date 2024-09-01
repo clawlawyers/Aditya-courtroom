@@ -9,7 +9,10 @@ import splashImage from "../../assets/images/splashImage.png";
 import LogoSplash from "../../assets/images/logoSplash.png";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { retrieveCourtroomAuth } from "../../features/bookCourtRoom/LoginReducreSlice";
+import {
+  logout,
+  retrieveCourtroomAuth,
+} from "../../features/bookCourtRoom/LoginReducreSlice";
 
 const CourtRoomAiLayout = () => {
   const currentUser = useSelector((state) => state.user.user);
@@ -24,7 +27,11 @@ const CourtRoomAiLayout = () => {
   console.log(currentUser);
 
   // useEffect(() => {
-  if (currentUser === "") {
+  if (
+    currentUser === "" ||
+    currentUser.message === "You have exceeded your time limit"
+  ) {
+    dispatch(logout());
     navigate("/");
   }
   // }, [currentUser]);

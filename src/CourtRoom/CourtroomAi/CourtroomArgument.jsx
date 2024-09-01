@@ -36,7 +36,7 @@ import voiceIcon from "../../assets/images/voice.png";
 
 const CourtroomArgument = () => {
   const verdictAccessRedux = useSelector(
-    (state) => state.user.user.courtroomFeatures.Verdict
+    (state) => state?.user?.user?.courtroomFeatures?.Verdict
   );
   const navigate = useNavigate();
 
