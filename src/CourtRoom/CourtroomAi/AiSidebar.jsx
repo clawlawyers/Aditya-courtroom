@@ -30,10 +30,12 @@ import EvidenceDialog from "../../components/Dialogs/EvidenceDialog";
 const TimerComponent = React.memo(({ ExitToCourtroom }) => {
   const totalHours = useSelector((state) => state.user.user.totalHours);
   const totalHoursUsed = useSelector((state) => state.user.user.totalUsedHours);
+
   const minutesLeft = parseInt(totalHoursUsed.toString().split(".")[1]) * 60;
   const firstTwoDigits = parseInt(minutesLeft.toString().slice(0, 2));
 
   const initialTime = parseInt(totalHoursUsed) * 3600 + firstTwoDigits * 60;
+  // console.log(initialTime);
 
   const [time, setTime] = useState(initialTime);
   const [timeOver, setTimeOver] = useState(false);
@@ -53,6 +55,11 @@ const TimerComponent = React.memo(({ ExitToCourtroom }) => {
   });
 
   const formatTime = (seconds) => {
+    // Check if seconds is NaN or not a number
+    if (isNaN(seconds) || typeof seconds !== "number") {
+      seconds = 0;
+    }
+    // console.log(seconds);
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
