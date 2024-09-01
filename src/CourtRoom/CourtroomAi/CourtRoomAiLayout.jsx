@@ -13,6 +13,7 @@ import {
   logout,
   retrieveCourtroomAuth,
 } from "../../features/bookCourtRoom/LoginReducreSlice";
+import toast from "react-hot-toast";
 
 const CourtRoomAiLayout = () => {
   const currentUser = useSelector((state) => state.user.user);
@@ -27,10 +28,12 @@ const CourtRoomAiLayout = () => {
   console.log(currentUser);
 
   // useEffect(() => {
-  if (
-    currentUser === "" ||
-    currentUser.message === "You have exceeded your time limit"
-  ) {
+  if (currentUser === "") {
+    navigate("/");
+  }
+
+  if (currentUser.message === "You have exceeded your time limit") {
+    toast.error("You have exceeded your time limit");
     dispatch(logout());
     navigate("/");
   }
