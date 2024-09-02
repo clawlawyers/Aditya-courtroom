@@ -75,13 +75,13 @@ const TimerComponent = React.memo(({ ExitToCourtroom }) => {
   };
   return (
     <>
-      <div className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded">
-        <h1 className="text-sm m-0">Total Time:</h1>
-        <h1 className="text-sm m-0 font-semibold">{totalHours} hr</h1>
+      <div className="flex justify-between items-center px-2 py-1 bg-[#C5C5C5] text-[#008080] border-2 rounded">
+        <h1 className="text-xs m-0">Total Time:</h1>
+        <h1 className="text-xs m-0 font-semibold">{totalHours} hr</h1>
       </div>
-      <div className="flex justify-between items-center p-2 bg-[#C5C5C5] text-[#008080] border-2 rounded">
-        <h1 className="text-sm m-0">Time Used Up:</h1>
-        <h1 className="text-sm m-0 font-semibold">
+      <div className="flex justify-between items-center px-2 py-1 bg-[#C5C5C5] text-[#008080] border-2 rounded">
+        <h1 className="text-xs m-0">Time Used Up:</h1>
+        <h1 className="text-xs m-0 font-semibold">
           {/* {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
           {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds} */}
           {formatTime(time)}
@@ -686,14 +686,12 @@ const AiSidebar = () => {
                 fill-rule="nonzero"
               />
             </svg>
-            <p className="m-0">Go Back</p>
+            <p className="m-0 text-xs">Go Back</p>
           </motion.div>
           <div className="flex-1  overflow-auto">
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col">
               <div className="flex flex-row justify-between items-center">
-                <p className="text-[#00FFA3] text-[18px] m-0">
-                  Case Details :{" "}
-                </p>
+                <p className="text-[#00FFA3] text-sm m-0">Case Details : </p>
 
                 {/* <motion.button
                   whileTap={{ scale: "0.95" }}
@@ -801,7 +799,7 @@ const AiSidebar = () => {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                padding: "5px 20px",
+                padding: "0px 10px",
                 background: "#C5C5C5",
                 color: "#008080",
                 border: "2px solid white",
@@ -811,9 +809,7 @@ const AiSidebar = () => {
               }}
             >
               <div>
-                <p style={{ fontSize: "15px", margin: "0" }}>
-                  Download Session History
-                </p>
+                <p className="text-xs m-0">Download Session History</p>
               </div>
               <div style={{ width: "15px", margin: "0" }}>
                 <svg
@@ -841,7 +837,7 @@ const AiSidebar = () => {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                padding: "5px 20px",
+                padding: "0px 10px",
                 background: "#C5C5C5",
                 color: "#008080",
                 border: "2px solid white",
@@ -851,9 +847,7 @@ const AiSidebar = () => {
               }}
             >
               <div>
-                <p style={{ fontSize: "15px", margin: "0" }}>
-                  Download Case History
-                </p>
+                <p className="text-xs m-0">Download Case History</p>
               </div>
               <div style={{ width: "15px", margin: "0" }}>
                 <svg
@@ -884,7 +878,7 @@ const AiSidebar = () => {
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                padding: "5px 20px",
+                padding: "0px 10px",
                 background: "#C5C5C5",
                 color: "#008080",
                 border: "2px solid white",
@@ -893,7 +887,7 @@ const AiSidebar = () => {
               }}
             >
               <div>
-                <p style={{ fontSize: "15px", margin: "0" }}>Ask LegalGPT</p>
+                <p className="text-xs m-0">Ask LegalGPT</p>
               </div>
               <div style={{ width: "15px", margin: "0" }}>
                 <svg
@@ -1009,7 +1003,7 @@ const AiSidebar = () => {
                   />
                 </svg>
 
-                <p className="m-0 text-sm text-white">View first Draft</p>
+                <p className="m-0 text-xs text-white">View first Draft</p>
                 {draftAccessHover ? (
                   <h1 className="z-30 absolute text-xs right-7 -top-12 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
                     To Enable It : Contact Sales
@@ -1042,7 +1036,7 @@ const AiSidebar = () => {
                 >
                   <path d="M23 12c0 1.042-.154 2.045-.425 3h-2.101c.335-.94.526-1.947.526-3 0-4.962-4.037-9-9-9-1.706 0-3.296.484-4.654 1.314l1.857 2.686h-6.994l2.152-7 1.85 2.673c1.683-1.049 3.658-1.673 5.789-1.673 6.074 0 11 4.925 11 11zm-6.354 7.692c-1.357.826-2.944 1.308-4.646 1.308-4.963 0-9-4.038-9-9 0-1.053.191-2.06.525-3h-2.1c-.271.955-.425 1.958-.425 3 0 6.075 4.925 11 11 11 2.127 0 4.099-.621 5.78-1.667l1.853 2.667 2.152-6.989h-6.994l1.855 2.681zm-3.646-7.692v-6h-2v8h7v-2h-5z" />
                 </svg>
-                <p className="m-0 text-sm text-white">Old Case Search</p>
+                <p className="m-0 text-xs text-white">Old Case Search</p>
               </motion.div>
               <Link to={"/courtroom-ai"}>
                 <motion.div
@@ -1072,7 +1066,7 @@ const AiSidebar = () => {
                     />
                   </svg>
                   <p
-                    className="m-0 text-sm text-white"
+                    className="m-0 text-xs text-white"
                     onClick={() => saveHistory()}
                   >
                     New Case Input
@@ -1099,7 +1093,7 @@ const AiSidebar = () => {
                 >
                   <path d="M22 11.414v12.586h-20v-12.586l-1.293 1.293-.707-.707 12-12 12 12-.707.707-1.293-1.293zm-6 11.586h5v-12.586l-9-9-9 9v12.586h5v-9h8v9zm-1-7.889h-6v7.778h6v-7.778z" />
                 </svg>
-                <p className="m-0 text-sm">Claw Home</p>
+                <p className="m-0 text-xs">Claw Home</p>
               </motion.div>
               <motion.div
                 whileTap={{ scale: "0.95" }}
@@ -1112,8 +1106,8 @@ const AiSidebar = () => {
                 }}
               >
                 <svg
-                  width="22"
-                  height="22"
+                  width="20"
+                  height="20"
                   fill="white"
                   xmlns="http://www.w3.org/2000/svg"
                   fill-rule="evenodd"
@@ -1122,7 +1116,7 @@ const AiSidebar = () => {
                   <path d="M11 21h8.033v-2l1-1v4h-9.033v2l-10-3v-18l10-3v2h9.033v5l-1-1v-3h-8.033v18zm-1 1.656v-21.312l-8 2.4v16.512l8 2.4zm11.086-10.656l-3.293-3.293.707-.707 4.5 4.5-4.5 4.5-.707-.707 3.293-3.293h-9.053v-1h9.053z" />
                 </svg>
 
-                <p className="m-0 text-sm" onClick={() => ExitToCourtroom()}>
+                <p className="m-0 text-xs" onClick={() => ExitToCourtroom()}>
                   Exit Courtroom
                 </p>
               </motion.div>
