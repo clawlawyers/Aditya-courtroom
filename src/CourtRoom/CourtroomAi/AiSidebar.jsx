@@ -1509,7 +1509,22 @@ const AiSidebar = () => {
                   your questions and queries
                 </p>
               </div>
-              <div className="flex gap-2 p-3">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setSearchQuery(true);
+                  getLegalGptResponse();
+                  setPromptArr([
+                    ...promptArr,
+                    {
+                      prompt: askLegalGptPrompt,
+                      promptResponse: null,
+                    },
+                  ]);
+                  setAskLegalGptPrompt("");
+                }}
+                className="flex gap-2 p-3"
+              >
                 <input
                   className="flex-1 p-2 rounded text-black"
                   placeholder="Enter Your Query Here"
@@ -1517,20 +1532,9 @@ const AiSidebar = () => {
                   onChange={(e) => setAskLegalGptPrompt(e.target.value)}
                 />
                 <motion.button
+                  type="submit"
                   disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
-                  onClick={() => {
-                    setSearchQuery(true);
-                    getLegalGptResponse();
-                    setPromptArr([
-                      ...promptArr,
-                      {
-                        prompt: askLegalGptPrompt,
-                        promptResponse: null,
-                      },
-                    ]);
-                    setAskLegalGptPrompt("");
-                  }}
                   className="px-3 rounded"
                   style={{
                     background: "linear-gradient(180deg, #008080,#001A1A)",
@@ -1538,7 +1542,7 @@ const AiSidebar = () => {
                 >
                   Send
                 </motion.button>
-              </div>
+              </form>
             </div>
           ) : (
             <div className="h-screen flex flex-col border-2 border-white rounded w-2/4 bg-[#222222] justify-between">
@@ -1610,7 +1614,22 @@ const AiSidebar = () => {
                     ))}
                 </div>
               </div>
-              <div className="px-4 flex gap-2 py-3">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setSearchQuery(true);
+                  getLegalGptResponse();
+                  setPromptArr([
+                    ...promptArr,
+                    {
+                      prompt: askLegalGptPrompt,
+                      promptResponse: null,
+                    },
+                  ]);
+                  setAskLegalGptPrompt("");
+                }}
+                className="px-4 flex gap-2 py-3"
+              >
                 <input
                   className="flex-1 p-2 rounded text-black"
                   placeholder="Enter Your Query Here"
@@ -1618,20 +1637,9 @@ const AiSidebar = () => {
                   onChange={(e) => setAskLegalGptPrompt(e.target.value)}
                 />
                 <motion.button
+                  type="submit"
                   disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
-                  onClick={() => {
-                    setSearchQuery(true);
-                    getLegalGptResponse();
-                    setPromptArr([
-                      ...promptArr,
-                      {
-                        prompt: askLegalGptPrompt,
-                        promptResponse: null,
-                      },
-                    ]);
-                    setAskLegalGptPrompt("");
-                  }}
                   className="px-3 rounded"
                   style={{
                     background: "linear-gradient(180deg, #008080,#001A1A)",
@@ -1639,7 +1647,7 @@ const AiSidebar = () => {
                 >
                   Send
                 </motion.button>
-              </div>
+              </form>
             </div>
           )}
         </div>

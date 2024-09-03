@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import Popover from "@mui/material/Popover";
 import Typography from "@mui/material/Typography";
 import voiceIcon from "../../assets/images/voice.png";
+import VoiceSearch from "./VoiceSearch/VoiceSearch";
 
 // const userArgument = [
 //   "I feel your pain. This is such a simple function and yet they make it so amazingly complicated. I find the same nonsense with adding a simple border to an object. They have 400 ways to shade the color of a box, but not even 1 simple option for drawing a line around the box. I get the feeling the Figma designers don’t ever use their product",
@@ -61,6 +62,7 @@ const CourtroomArgument = () => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [verdictAccess, setVerdictAccess] = useState(false);
+  const [voiceSearchInitiate, setVoiceSearchInitiate] = useState(false);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -441,7 +443,7 @@ const CourtroomArgument = () => {
                 src={aiJudge}
                 alt="judge-icon"
               />
-              <h1 style={{ fontSize: "20px", margin: "0" }}>AI Judge</h1>
+              <h1 className="text-sm m-0">AI Judge</h1>
             </div>
             <div
               className="flex-1"
@@ -488,7 +490,7 @@ const CourtroomArgument = () => {
                 src={aiLawyer}
                 alt="judge-icon"
               />
-              <h1 style={{ fontSize: "20px", margin: "0" }}>AI Lawyer</h1>
+              <h1 className="text-sm m-0">AI Lawyer</h1>
             </div>
             <div
               className="flex-1 overflow-auto"
@@ -539,9 +541,7 @@ const CourtroomArgument = () => {
                   fill-rule="nonzero"
                 />
               </svg>
-              <h1 style={{ margin: "5px", fontSize: "15px" }}>
-                Swap with AI Lawyer
-              </h1>
+              <h1 className="text-sm m-[5px]">Swap with AI Lawyer</h1>
             </motion.div>
           </div>
         )}
@@ -561,7 +561,7 @@ const CourtroomArgument = () => {
               src={userIcon}
               alt="user-icon"
             />
-            <h1 style={{ fontSize: "20px", margin: "0" }}>User Argument</h1>
+            <h1 className="text-sm m-0">User Argument</h1>
           </div>
           <div className="flex-1 overflow-auto ">
             <div className="w-full flex flex-row-reverse pr-3 items-center   ">
@@ -754,6 +754,7 @@ const CourtroomArgument = () => {
             placeholder="Input Your Case Into The Courtroom"
           />
           <img
+            onClick={() => setVoiceSearchInitiate(true)}
             className="absolute right-4 top-2"
             src={voiceIcon}
             alt="voice.png"
@@ -817,6 +818,27 @@ const CourtroomArgument = () => {
           )}
         </div>
       </div>
+      {voiceSearchInitiate ? (
+        <div
+          style={{
+            width: "100%",
+            height: "100vh",
+            position: "absolute",
+            left: "0",
+            right: "0",
+            backgroundColor: "rgba(0, 0, 0, 0.1)",
+            backdropFilter: "blur(3px)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: "20",
+          }}
+        >
+          <VoiceSearch setVoiceSearchInitiate={setVoiceSearchInitiate} />
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 };
