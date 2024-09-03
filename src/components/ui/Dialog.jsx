@@ -108,6 +108,10 @@ const Dialog = ({
       setPreviewContent("");
       navigate("/courtroom-ai/");
     } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
+      }
       toast.error("Failed to save case overview");
       setUploading(false);
     }

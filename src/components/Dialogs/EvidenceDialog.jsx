@@ -42,6 +42,12 @@ const EvidenceDialog = ({ handleEvidenceClose }) => {
       );
 
       if (!fetchData.ok) {
+        const errorMessage = await fetchData.json();
+        console.error(errorMessage.error.explanation);
+        if (errorMessage.error.explanation === "Please refresh the page") {
+          toast.error("Please refresh the page.");
+          return;
+        }
         throw new Error("API request failed");
       }
 
@@ -64,6 +70,7 @@ const EvidenceDialog = ({ handleEvidenceClose }) => {
 
       // Example: updateEvidenceList(data.evidence)
     } catch (error) {
+      console.log(error);
       setLoading(false);
       console.error("Error in submitting evidence", error);
       toast.error("Error in submitting evidence", error);

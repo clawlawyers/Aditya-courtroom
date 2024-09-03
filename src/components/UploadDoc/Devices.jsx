@@ -61,6 +61,10 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
       setUploadComplete(false);
       setPreviewContent("");
     } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
+      }
       toast.error("Failed to save case overview");
     }
   };
@@ -122,6 +126,12 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
             setUploadComplete(true);
           }, 3000);
         } catch (error) {
+          if (
+            error.response.data.error.explanation === "Please refresh the page"
+          ) {
+            toast.error("Please refresh the page");
+            return;
+          }
           console.log(error);
           toast.error("Error uploading file");
         }

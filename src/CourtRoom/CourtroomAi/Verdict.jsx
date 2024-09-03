@@ -4,6 +4,7 @@ import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { useSelector } from "react-redux";
 import LoadingDialog from "../../components/LoadingDialog";
 import DocumentViewer from "./DocumentViewer";
+import toast from "react-hot-toast";
 
 const Verdict = () => {
   const currentUser = useSelector((state) => state.user.user);
@@ -29,6 +30,12 @@ const Verdict = () => {
         console.log("verdict text is", verdictText);
         setVerdict(verdictText);
       } catch (error) {
+        if (
+          error.response.data.error.explanation === "Please refresh the page"
+        ) {
+          toast.error("Please refresh the page");
+          return;
+        }
         console.error("Error fetching verdict:", error);
       } finally {
         setLoading(false);

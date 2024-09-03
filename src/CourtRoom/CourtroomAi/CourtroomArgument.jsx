@@ -184,6 +184,10 @@ const CourtroomArgument = () => {
       setSelectedUserArgument(null);
       setSelectedUserArgumentContent(null);
     } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
+      }
       console.error(error);
       toast.error("Error in saving the argument");
     }
@@ -235,6 +239,10 @@ const CourtroomArgument = () => {
 
       setAiJudgeLoading(false);
     } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
+      }
       console.log(error);
       toast.error("Error in retrieving the argument");
     }
@@ -308,6 +316,10 @@ const CourtroomArgument = () => {
       setJudgeArgument(judgeArgument);
       setAiJudgeLoading(false);
     } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
+      }
       console.error(error);
       toast.error("Error in generating details");
     }
@@ -352,6 +364,10 @@ const CourtroomArgument = () => {
       //clear input text
       setAddArgumentInputText(null);
     } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
+      }
       console.error(error);
       toast.error("Error in adding argument");
     }
@@ -381,6 +397,12 @@ const CourtroomArgument = () => {
           history.data.data.caseHistory.judgement[judgeArrLen - 1]
         );
       } catch (error) {
+        if (
+          error.response.data.error.explanation === "Please refresh the page"
+        ) {
+          toast.error("Please refresh the page");
+          return;
+        }
         console.error(error);
         toast.error("Error in fetching case history");
       }

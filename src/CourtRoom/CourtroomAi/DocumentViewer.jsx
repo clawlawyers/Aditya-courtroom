@@ -37,6 +37,11 @@ const DocumentViewer = ({ text }) => {
       link.click();
       link.remove();
     } catch (error) {
+      console.log(error);
+      // if (error.response.data.error.explanation === "Please refresh the page") {
+      //   toast.error("Please refresh the page");
+      //   return;
+      // }
       console.error("Error downloading case history:", error);
       toast.error("Error downloading case history");
     }

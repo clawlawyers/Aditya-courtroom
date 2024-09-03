@@ -300,6 +300,12 @@ const AiSidebar = () => {
       );
 
       if (!fetchedData.ok) {
+        const errorMessage = await fetchedData.json();
+        console.error(errorMessage.error.explanation);
+        if (errorMessage.error.explanation === "Please refresh the page") {
+          toast.error("Please refresh the page.");
+          return;
+        }
         toast.error("Failed to fetch relevant case laws");
         return;
       }
@@ -334,17 +340,28 @@ const AiSidebar = () => {
 
     // await saveHistory();
     if (overViewDetails !== "") {
-      await axios.post(
-        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/end`,
-        {
-          userId: currentUser.userId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${currentUser.token}`,
+      try {
+        await axios.post(
+          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/end`,
+          {
+            userId: currentUser.userId,
           },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,
+            },
+          }
+        );
+      } catch (error) {
+        if (
+          error.response.data.error.explanation === "Please refresh the page"
+        ) {
+          toast.error("Please refresh the page");
+          return;
         }
-      );
+        toast.error("Error in ending session");
+        console.error("Error in ending session", error);
+      }
     }
 
     dispatch(logout());
@@ -370,6 +387,10 @@ const AiSidebar = () => {
         );
       }
     } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
+      }
       toast.error("Error in saving history");
       console.error("Error in saving history", error);
     }
@@ -392,6 +413,10 @@ const AiSidebar = () => {
       dispatch(setOverview(text));
       setEditDialog(false);
     } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
+      }
       toast.error("Error in saving case");
       console.error("Error in saving case", error);
     }
@@ -431,15 +456,14 @@ const AiSidebar = () => {
               },
             }
           );
-
-          // console.log("response is ", response.data.data.draft.detailed_draft);
-          // const formattedDraftText = formatText(
-          //   response.data.data.draft.detailed_draft
-          // );
-          // const htmlContent = formattedDraftText;
-          // const escapedContent = escapeHTML(htmlContent);
           setFirstDraft(response.data.data.draft.detailed_draft);
         } catch (error) {
+          if (
+            error.response.data.error.explanation === "Please refresh the page"
+          ) {
+            toast.error("Please refresh the page");
+            return;
+          }
           toast.error("Error in getting first draft");
         } finally {
           setFirsDraftLoading(false);
@@ -472,6 +496,10 @@ const AiSidebar = () => {
       );
       setAiAssistantLoading(false);
     } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
+      }
       console.error("Error fetching AI questions:", error);
       setAiAssistantLoading(false);
     }
@@ -499,6 +527,12 @@ const AiSidebar = () => {
           dispatch(setOverview(overView.data.data.case_overview));
         }
       } catch (error) {
+        if (
+          error.response.data.error.explanation === "Please refresh the page"
+        ) {
+          toast.error("Please refresh the page");
+          return;
+        }
         toast.error("Error in fetching case overview");
         console.error("Error fetching case overview", error);
       }
@@ -628,6 +662,12 @@ const AiSidebar = () => {
       );
 
       if (!getResponse.ok) {
+        const errorMessage = await getResponse.json();
+        console.error(errorMessage.error.explanation);
+        if (errorMessage.error.explanation === "Please refresh the page") {
+          toast.error("Please refresh the page.");
+          return;
+        }
         throw new Error(`Error: ${getResponse.statusText}`);
       }
 
