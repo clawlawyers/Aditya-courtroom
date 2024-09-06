@@ -24,6 +24,10 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
   const currentUser = useSelector((state) => state.user.user);
   console.log(currentUser);
 
+  const multilingualSupport = useSelector(
+    (state) => state?.user?.user?.courtroomFeatures?.MultilingualSupport
+  );
+
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
@@ -102,7 +106,7 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
             formData.append(`file${index}`, file); // Append all files under the same key
           }
         });
-
+        formData.append("isMultilang", multilingualSupport);
         try {
           const response = await axios.post(
             `${NODE_API_ENDPOINT}/specificLawyerCourtroom/newcase`,

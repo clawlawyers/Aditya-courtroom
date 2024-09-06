@@ -775,12 +775,12 @@ const CourtroomArgument = () => {
             }}
             placeholder="Input Your Case Into The Courtroom"
           />
-          <img
+          {/* <img
             onClick={() => setVoiceSearchInitiate(true)}
             className="absolute right-4 top-2"
             src={voiceIcon}
             alt="voice.png"
-          />
+          /> */}
         </div>
         <div className="flex gap-2 relative">
           <motion.button

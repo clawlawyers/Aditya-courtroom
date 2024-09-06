@@ -26,6 +26,7 @@ import toast from "react-hot-toast";
 import loader from "../../assets/images/aiAssistantLoading.gif";
 import { MoreVert } from "@mui/icons-material";
 import EvidenceDialog from "../../components/Dialogs/EvidenceDialog";
+import TestimonyDialog from "../../components/Dialogs/TestimonyDialog";
 
 const TimerComponent = React.memo(({ ExitToCourtroom }) => {
   const totalHours = useSelector((state) => state.user.user.totalHours);
@@ -152,63 +153,21 @@ const AiSidebar = () => {
   const [searchQuery, setSearchQuery] = useState(false);
   const [evidenceAnchorEl, setEvidenceAnchorEl] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [isEvidenceDialogOpen, setEvidenceDialogOpen] = useState(false);
+  const [testimonyAnchorEl, setTestimonyAnchorEl] = useState(null);
+
   const charsPerPage = 1000; // Define this value outside the function
-
-  // Function to split text into pages
-  const getPages = (text) => {
-    const pages = [];
-    for (let i = 0; i < text.length; i += charsPerPage) {
-      pages.push(text.slice(i, i + charsPerPage));
-    }
-    return pages;
-  };
-
-  // Update pages when inputText changes
-  // useEffect(() => {
-  //   const newPages = getPages(inputText);
-  //   setPages(newPages);
-  //   setCurrentText(newPages[currentPage] || "");
-  // }, [inputText]);
 
   // Update inputText when pages change
   useEffect(() => {
     setInputText(pages.join(""));
   }, [pages]);
 
-  const handlePrevious = () => {
-    if (currentPage > 0) {
-      setPages((pages) => {
-        const updatedPages = [...pages];
-        updatedPages[currentPage] = currentText;
-        return updatedPages;
-      });
-      setCurrentPage(currentPage - 1);
-      setCurrentText(pages[currentPage - 1] || "");
-    }
-  };
-
-  const handleNext = () => {
-    if (currentPage < pages.length - 1) {
-      setPages((pages) => {
-        const updatedPages = [...pages];
-        updatedPages[currentPage] = currentText;
-        return updatedPages;
-      });
-      setCurrentPage(currentPage + 1);
-      setCurrentText(pages[currentPage + 1] || "");
-    }
-  };
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleTextChange = (e) => {
-    setCurrentText(e.target.value);
   };
 
   const handleEditToggle = () => {
@@ -221,6 +180,15 @@ const AiSidebar = () => {
 
   const handleEvidenceClose = () => {
     setEvidenceAnchorEl(null);
+  };
+
+  const handleTestimonyClick = (event) => {
+    setTestimonyAnchorEl(event.currentTarget);
+    handleMenuClose();
+  };
+
+  const handleTestimonyClose = () => {
+    setTestimonyAnchorEl(null);
   };
 
   const navigate = useNavigate();
@@ -276,10 +244,6 @@ const AiSidebar = () => {
   useEffect(() => {
     setText(overViewDetails);
   }, [overViewDetails]);
-
-  const handleExit = () => {
-    navigate("/court-room");
-  };
 
   const formatText = (text) => {
     return text
@@ -787,7 +751,9 @@ const AiSidebar = () => {
                           Add Evidences
                         </motion.p>
                       </MenuItem>
-                      {/* <MenuItem>Save</MenuItem> */}
+                      <MenuItem onClick={handleTestimonyClick}>
+                        Add Testimony
+                      </MenuItem>
                     </Menu>
                   </div>
 
@@ -811,6 +777,29 @@ const AiSidebar = () => {
                     }}
                   >
                     <EvidenceDialog handleEvidenceClose={handleEvidenceClose} />
+                  </Popover>
+                  <Popover
+                    open={Boolean(testimonyAnchorEl)}
+                    anchorEl={testimonyAnchorEl}
+                    onClose={handleTestimonyClose}
+                    anchorOrigin={{
+                      vertical: "center",
+                      horizontal: "right",
+                    }}
+                    transformOrigin={{
+                      vertical: "center",
+                      horizontal: "left",
+                    }}
+                    sx={{
+                      "& .MuiPaper-root": {
+                        width: "600px", // Adjust the width as needed
+                        padding: "16px", // Adjust the padding as needed
+                      },
+                    }}
+                  >
+                    <TestimonyDialog
+                      handleTestimonyClose={handleTestimonyClose}
+                    />
                   </Popover>
                 </div>
               </div>
