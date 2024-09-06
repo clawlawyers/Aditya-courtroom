@@ -20,30 +20,35 @@ const TestimonyDialog = ({ handleTestimonyClose }) => {
     setLoading(true);
     console.log("Testimony:", testimony);
     try {
-      //     const fetchData = await fetch(
-      //       `${NODE_API_ENDPOINT}/courtroom/api/evidence`,
-      //       {
-      //         method: "POST",
-      //         headers: {
-      //           "Content-Type": "application/json",
-      //           Authorization: `Bearer ${currentUser.token}`,
-      //         },
-      //         body: JSON.stringify({ action: "Generate", evidence_text: evidence }),
-      //       }
-      //     );
-      //   if (!fetchData.ok) {
-      //     throw new Error("API request failed");
-      //   }
-      //   const data = await fetchData.json();
-      //   console.log("API response:", data);
-      //   toast.success("Testimony submitted successfully");
-      //   setTestimonyGenerated(true);
-      //     setTestimonyRelevance(data.data.fetchedEvidence.Evidence_Relevance);
-      //   setLoading(false);
+      const fetchData = await fetch(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/testimony_questions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+          body: JSON.stringify({
+            testimony_statement: testimony,
+          }),
+        }
+      );
+      if (!fetchData.ok) {
+        throw new Error("API request failed");
+      }
+      const data = await fetchData.json();
+      console.log(
+        "API response:",
+        data.data.testimonyQuestions.testimony_questions
+      );
+      toast.success("Testimony submitted successfully");
+      setTestimonyGenerated(true);
+      setTestimonyRelevance(data.data.testimonyQuestions.testimony_questions);
+      setLoading(false);
     } catch (error) {
       setLoading(false);
-      console.error("Error in submitting evidence", error);
-      toast.error("Error in submitting evidence", error);
+      console.error("Error in submitting Testimony", error.message);
+      toast.error("Error in submitting Testimony", error.message);
     }
   };
 
