@@ -3,7 +3,7 @@ import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
 
-const VoiceSearch = ({ setVoiceSearchInitiate }) => {
+const VoiceSearch = ({ setVoiceSearchInitiate, setAddArgumentInputText }) => {
   const {
     transcript,
     listening,
@@ -89,7 +89,15 @@ const VoiceSearch = ({ setVoiceSearchInitiate }) => {
         value={transcript}
         onChange={(e) => setTranscriptText(e.target.value)}
       />
-      <button className="bg-black text-white rounded px-2 py-1">Search</button>
+      <button
+        onClick={() => {
+          setAddArgumentInputText(transcript);
+          setVoiceSearchInitiate(false);
+        }}
+        className="bg-black text-white rounded px-2 py-1"
+      >
+        Add To Argument
+      </button>
     </div>
   );
 };
