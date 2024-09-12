@@ -459,7 +459,7 @@ const CourtroomArgument = () => {
 
     try {
       const res = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/api/relevant_cases_judge_lawyer`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_cases_judge_lawyer`,
         {
           text_input: data,
         },
