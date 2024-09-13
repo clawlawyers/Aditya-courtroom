@@ -29,6 +29,7 @@ import AdminLayout from "./CourtRoom/admin/AdminLayout.jsx";
 import CourtRoomUsers from "./CourtRoom/admin/Admin.jsx";
 import AllowedBooking from "./CourtRoom/admin/AllowedBooking.jsx";
 import AllowedLogin from "./CourtRoom/admin/AllowedLogin.jsx";
+import AiDrafter from "./CourtRoom/CourtroomAi/AiDrafter.jsx";
 
 function App() {
   const BATCH_INTERVAL = 60 * 1000;
@@ -157,10 +158,10 @@ function App() {
           path: "/courtroom-ai/verdict",
           element: <Verdict />,
         },
-        // {
-        //   path: "/courtroom-ai/verdict",
-        //   element: <NewLayout />,
-        // },
+        {
+          path: "/courtroom-ai/aiDraft",
+          element: <AiDrafter />,
+        },
       ],
     },
 
