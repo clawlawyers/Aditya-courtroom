@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { CircularProgress, Modal } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import Markdown from "react-markdown";
 
 const courtIdMapping = [
   { name: "Supreme Court of India", id: "1bgi-zbCWObiTNjkegNXryni4ZJzZyCFV" },
@@ -90,122 +91,150 @@ const CaseLaws = () => {
             className="text-white cursor-pointer"
           />
         </div>
-        {caseLaws.length > 0 ? (
-          <div className="flex flex-col gap-2 h-[90%] overflow-auto">
-            {caseLaws.map((x, index) => (
-              <div
-                key={index}
-                className={Styles.backdrop}
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  justifyContent: "space-between",
-                  gap: 10,
-                  alignItems: "center",
-                  padding: 16,
-                  backgroundColor: "#008080",
-                  borderRadius: 10,
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <h2 style={{ fontSize: 23, fontWeight: 700 }}>{x.Title}</h2>
-                  <div style={{ fontSize: 13, color: "#DBD8D8" }}>
-                    <span>{x.Date}</span>,<span>{" " + x.court}</span>
-                  </div>
-                  <p style={{ fontSize: 13, color: "#DBD8D8", margin: 0 }}>
-                    Number of citations- {x.num_cites}
-                  </p>
-                </div>
-
-                <button
-                  onClick={() => {
-                    handleOpen(x.court, x.case_id);
-                  }}
-                  style={{
-                    border: "none",
-                    padding: "10px 12px",
-                    minWidth: "fit-content",
-                    backgroundColor: "white",
-                    borderRadius: 10,
-                    fontWeight: 700,
-                    fontSize: 14,
-                    textDecoration: "none",
-                    color: "black",
-                    backgroundImage: "none",
-                  }}
-                >
-                  View document
-                </button>
-
-                <Modal
-                  open={modalOpen}
-                  onClose={handleClose}
-                  aria-labelledby="child-modal-title"
-                >
+        {caseLaws ? (
+          <>
+            {caseLaws.length > 0 ? (
+              <div className="flex flex-col gap-2 h-[90%] overflow-auto">
+                {caseLaws.map((x, index) => (
                   <div
-                    className={Styles.scrollable}
+                    key={index}
+                    className={Styles.backdrop}
                     style={{
-                      backgroundColor: "white",
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      width: "80%",
-                      height: "90%",
-                      color: "black",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      justifyContent: "space-between",
+                      gap: 10,
+                      alignItems: "center",
+                      padding: 16,
+                      backgroundColor: "#008080",
                       borderRadius: 10,
-                      // overflowY: "scroll",
-                      padding: 10,
-                      transform: "translate(-50%, -50%)",
-                      boxShadow: 24,
                     }}
                   >
-                    <div
-                      style={{ position: "sticky", top: 0, display: "flex" }}
+                    <div style={{ flex: 1 }}>
+                      <h2 style={{ fontSize: 23, fontWeight: 700 }}>
+                        {x.Title}
+                      </h2>
+                      <div style={{ fontSize: 13, color: "#DBD8D8" }}>
+                        <span>{x.Date}</span>,<span>{" " + x.court}</span>
+                      </div>
+                      <p style={{ fontSize: 13, color: "#DBD8D8", margin: 0 }}>
+                        Number of citations- {x.num_cites}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        handleOpen(x.court, x.case_id);
+                      }}
+                      style={{
+                        border: "none",
+                        padding: "10px 12px",
+                        minWidth: "fit-content",
+                        backgroundColor: "white",
+                        borderRadius: 10,
+                        fontWeight: 700,
+                        fontSize: 14,
+                        textDecoration: "none",
+                        color: "black",
+                        backgroundImage: "none",
+                      }}
                     >
-                      <div style={{ flex: 1 }} />
-                      <button
-                        onClick={handleClose}
+                      View document
+                    </button>
+
+                    <Modal
+                      open={modalOpen}
+                      onClose={handleClose}
+                      aria-labelledby="child-modal-title"
+                    >
+                      <div
+                        className={Styles.scrollable}
                         style={{
-                          border: "none",
-                          backgroundColor: "transparent",
+                          backgroundColor: "white",
+                          position: "absolute",
+                          top: "50%",
+                          left: "50%",
+                          width: "80%",
+                          height: "90%",
+                          color: "black",
+                          borderRadius: 10,
+                          // overflowY: "scroll",
+                          padding: 10,
+                          transform: "translate(-50%, -50%)",
+                          boxShadow: 24,
                         }}
                       >
-                        <Close style={{ fontSize: 30, color: "black" }} />
-                      </button>
-                    </div>
-                    <div className="h-[90%] overflow-auto border border-black p-3">
-                      {loading ? (
                         <div
                           style={{
-                            width: "100%",
-                            height: "100%",
+                            position: "sticky",
+                            top: 0,
                             display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
                           }}
                         >
-                          <CircularProgress style={{ color: "black" }} />
+                          <div style={{ flex: 1 }} />
+                          <button
+                            onClick={handleClose}
+                            style={{
+                              border: "none",
+                              backgroundColor: "transparent",
+                            }}
+                          >
+                            <Close style={{ fontSize: 30, color: "black" }} />
+                          </button>
                         </div>
-                      ) : (
-                        <div
-                          style={{
-                            whiteSpace: "pre-line",
-                            alignItems: "center",
-                            width: "100%",
-                            fontSize: 16,
-                            fontWeight: 500,
-                            fontFamily: "serif",
-                          }}
-                        >
-                          {documentData}
+                        <div className="h-[90%] overflow-auto border border-black p-3">
+                          {loading ? (
+                            <div
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <CircularProgress style={{ color: "black" }} />
+                            </div>
+                          ) : (
+                            <div
+                              style={{
+                                whiteSpace: "pre-line",
+                                alignItems: "center",
+                                width: "100%",
+                                fontSize: 16,
+                                fontWeight: 500,
+                                fontFamily: "serif",
+                              }}
+                            >
+                              <Markdown>{documentData}</Markdown>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    </Modal>
                   </div>
-                </Modal>
+                ))}
               </div>
-            ))}
-          </div>
+            ) : (
+              <div className="flex flex-col gap-2 h-[90%] overflow-auto">
+                <div
+                  className={Styles.backdrop}
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                    gap: 10,
+                    alignItems: "center",
+                    padding: 25,
+                    backgroundColor: "#008080",
+                    borderRadius: 10,
+                  }}
+                >
+                  No Case Laws Found
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="h-full flex flex-col gap-2">
             <div

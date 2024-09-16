@@ -53,6 +53,37 @@ const AiDrafter = () => {
     setDrafterText(drafterDoc);
   }, [drafterDoc]);
 
+  const handleDownload = async () => {
+    const response = await fetch(
+      `${NODE_API_ENDPOINT}/specificLawyerCourtroom/get_pdf`,
+      {
+        // Replace with your backend URL
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ document: drafterDoc }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to generate PDF");
+    }
+
+    // Assuming the backend sends the PDF as a blob
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    // Create a link to download the PDF
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "Rent_Agreement.pdf";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="p-3 h-screen">
       <div className="border-2 border-black h-full bg-[#D9D9D9] rounded-md">
@@ -129,7 +160,10 @@ const AiDrafter = () => {
             </div>
           </div>
           <div className="flex justify-end px-2">
-            <button className="border-2 border-teal-700 rounded-md px-3 py-2 text-black">
+            <button
+              onClick={handleDownload}
+              className="border-2 border-teal-700 rounded-md px-3 py-2 text-black"
+            >
               Download Document
             </button>
           </div>

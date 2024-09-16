@@ -37,6 +37,7 @@ import {
   removeDrafter,
   retrieveDrafterQuestions,
 } from "../../features/laws/drafterSlice";
+import { removeCaseLaws, retrieveCaseLaws } from "../../features/laws/lawSlice";
 
 const drafterQuestions = [
   { name: "Bail Application", value: "bail_application" },
@@ -250,6 +251,7 @@ const AiSidebar = () => {
   const [showRelevantLaws, setShowRelevantLaws] = useState(false);
   const [relevantCaseLoading, setRelevantCaseLoading] = useState(false);
   const [relevantLawsArr, setRelevantLawsArr] = useState(null);
+  const [relevantLawData, setRelevantLawData] = useState("");
   const [evidenceAccessHover, setEvidenceAccessHover] = useState(false);
 
   const scrollRef = useRef(null);
@@ -299,6 +301,7 @@ const AiSidebar = () => {
       const formattedData = formatText(
         data.data.relevantCases.relevant_case_law
       );
+      setRelevantLawData(data.data.relevantCases.relevant_case_law);
       console.log(data.data.relevantCases.relevant_case_law);
       setRelevantCaseLoading(false);
       setRelevantLawsArr(formattedData);
@@ -1234,7 +1237,7 @@ const AiSidebar = () => {
                           </div>
                         ) : (
                           <p
-                            className="h-[60vh]"
+                            className="h-[55vh]"
                             dangerouslySetInnerHTML={{
                               __html: relevantLawsArr,
                             }}
@@ -1246,6 +1249,27 @@ const AiSidebar = () => {
                       <div className="flex flex-col w-full gap-2">
                         <img className="" src={logo} alt="logo" />
                         <h3 className=" text-center">Draft Preview</h3>
+                      </div>
+                    )}
+                    {showRelevantLaws && !relevantCaseLoading && (
+                      <div className="w-full flex justify-end">
+                        <Link to={"/courtroom-ai/caseLaws"}>
+                          <button
+                            onClick={() => {
+                              dispatch(removeCaseLaws());
+                              dispatch(
+                                retrieveCaseLaws({
+                                  query: relevantLawData,
+                                  token: currentUser.token,
+                                })
+                              );
+                              setFirstDraftDialog(false);
+                            }}
+                            className="bg-[#003131] px-4 py-1 text-sm rounded text-white"
+                          >
+                            View Case Laws
+                          </button>
+                        </Link>
                       </div>
                     )}
                     <div className="grid grid-cols-2 gap-2 relative">

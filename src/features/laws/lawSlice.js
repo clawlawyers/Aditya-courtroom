@@ -32,11 +32,11 @@ export const retrieveCaseLaws = createAsyncThunk(
 const lawSlice = createSlice({
   name: "laws",
   initialState: {
-    caseLaws: [],
+    caseLaws: null,
   },
   reducers: {
     removeCaseLaws(state) {
-      state.caseLaws = [];
+      state.caseLaws = null;
     },
   },
   extraReducers: (builder) => {
