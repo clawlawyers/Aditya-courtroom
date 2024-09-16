@@ -7,8 +7,8 @@ import { motion } from "framer-motion";
 import loader from "../../assets/images/argumentLoading.gif";
 import axios from "axios";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import Markdown from "react-markdown";
 import toast from "react-hot-toast";
 import Popover from "@mui/material/Popover";
@@ -19,6 +19,7 @@ import { IconButton, Menu } from "@mui/material";
 import { Close, MoreVert } from "@mui/icons-material";
 import expand from "../../assets/images/expand.png";
 import collapse from "../../assets/images/collapse.png";
+import { removeCaseLaws, retrieveCaseLaws } from "../../features/laws/lawSlice";
 
 // const userArgument = [
 //   "I feel your pain. This is such a simple function and yet they make it so amazingly complicated. I find the same nonsense with adding a simple border to an object. They have 400 ways to shade the color of a box, but not even 1 simple option for drawing a line around the box. I get the feeling the Figma designers don’t ever use their product",
@@ -44,6 +45,7 @@ const CourtroomArgument = () => {
     (state) => state?.user?.user?.courtroomFeatures?.Verdict
   );
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [dialogContent, setDialogContent] = useState(
     "I find the same nonsense with adding a simple border to an object. They have 400 ways to shade the color of a box, but not even 1 simple option for drawing a line around the box. I get the feeling the Figma designers don’t ever use their product"
@@ -70,6 +72,7 @@ const CourtroomArgument = () => {
   const [showRelevantCaseJudge, setRelevantCaseJudge] = useState(false);
   const [loadingRelevantCases, setLoadingRelevantCases] = useState(false);
   const [relevantCases, setRelevantCases] = useState("");
+  const [relevantCasesData, setRelevantCasesData] = useState("");
   const [judgeViewExpand, setJudgeViewExpand] = useState(false);
   const [lawyerViewExpand, setLawyerViewExpand] = useState(false);
 
@@ -474,6 +477,7 @@ const CourtroomArgument = () => {
         }
       );
       // console.log(res);
+      setRelevantCasesData(res.data.data.relevantCases.relevant_case_law);
       var data = res.data.data.relevantCases.relevant_case_law;
       console.log(data);
       data = data.replace(/\\n/g, "<br/>");
@@ -997,7 +1001,7 @@ const CourtroomArgument = () => {
             zIndex: "50",
           }}
         >
-          <div className="w-2/5 h-[90%] bg-white rounded p-3">
+          <div className="w-2/5 h-[90%] bg-white rounded p-3 border border-black">
             <div className="flex  flex-row justify-between items-start w-full">
               <div className="flex  flex-col justify-center items-start">
                 <h1 className="px-10 text-xl font-semibold text-teal-700 text-left">
@@ -1024,6 +1028,26 @@ const CourtroomArgument = () => {
                 </div>
               )}
             </div>
+            {!loadingRelevantCases && (
+              <div className="flex justify-end">
+                <Link to={"/courtroom-ai/caseLaws"}>
+                  <button
+                    onClick={() => {
+                      dispatch(removeCaseLaws());
+                      dispatch(
+                        retrieveCaseLaws({
+                          query: relevantCasesData,
+                          token: currentUser.token,
+                        })
+                      );
+                    }}
+                    className="bg-[#003131] px-4 py-1 text-sm rounded text-white"
+                  >
+                    View Case Laws
+                  </button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       ) : (

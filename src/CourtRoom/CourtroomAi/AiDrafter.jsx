@@ -1,16 +1,57 @@
 import { Close } from "@mui/icons-material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import loader from "../../assets/images/evidenceLoad.gif";
+import { NODE_API_ENDPOINT } from "../../utils/utils";
+import { editDrafter, removeDrafter } from "../../features/laws/drafterSlice";
+import Markdown from "react-markdown";
 
 const AiDrafter = () => {
+  const drafterDoc = useSelector((state) => state.drafter.drafterDoc);
+  const currentUser = useSelector((state) => state.user.user);
+
   const [promptText, setPromptText] = useState("");
   const [promptTextbox, setPromptTextbox] = useState(false);
+  const [drafterText, setDrafterText] = useState(null);
 
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleNavigation = () => {
     navigate(-1);
   };
+
+  const handleEditDoc = async () => {
+    dispatch(removeDrafter());
+    try {
+      const props = await fetch(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/edit_application`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+          body: JSON.stringify({ query: promptText }),
+        }
+      );
+      const parsedProps = await props.json();
+      dispatch(
+        editDrafter({
+          drafterDoc: parsedProps.data.editApplication.application,
+        })
+      );
+      setPromptTextbox(false);
+      setPromptText("");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    setDrafterText(drafterDoc);
+  }, [drafterDoc]);
 
   return (
     <div className="p-3 h-screen">
@@ -25,47 +66,20 @@ const AiDrafter = () => {
           </div>
           <div className="flex-1 grid grid-cols-[65%_35%] gap-2 px-3 h-[80%]">
             <div className="bg-[#00808034] rounded-md h-full overflow-scroll">
-              <p className="m-0 p-2 text-sm text-black h-full overflow-auto">
-                Lorem Ipsum is simply dummy text of the printingLorem Ipsum is
-                simply dummy text of the printing and typesetting industry.
-                Lorem Ipsum has been the industry's standard dummy text ever
-                since the 1500s, when an unknown printer took a galley of type
-                and scrambled it to make a type specimen book. It has survived
-                not only five centuries, but also the leap into electronic
-                typesetting, remaining essentially unchanged. It was popularised
-                in the 1960s with the release of Letraset sheets containing
-                Lorem Ipsum passages, and more recently with desktop publishing
-                software like Aldus PageMaker including versions of Lorem
-                Ipsum.Lorem Ipsum is simply dummy text of the printing and
-                typesetting industry. Lorem Ipsum has been the industry's
-                standard dummy text ever since the 1500s, when an unknown
-                printer took a galley of type and scrambled it to make a type
-                specimen book. It has survived not only five centuries, but also
-                the leap into electronic typesetting, remaining essentially
-                unchanged. It was popularised in the 1960s with the release of
-                Letraset sheets containing Lorem Ipsum passages, and more
-                recently with desktop publishing software like Aldus PageMaker
-                including versions of Lorem Ipsum.Lorem Ipsum is simply dummy
-                text of the printing and typesetting industry. Lorem Ipsum has
-                been the industry's standard dummy text ever since the 1500s,
-                when an unknown printer took a galley of type and scrambled it
-                to make a type specimen book. It has survived not only five
-                centuries, but also the leap into electronic typesetting,
-                remaining essentially unchanged. It was popularised in the 1960s
-                with the release of Letraset sheets containing Lorem Ipsum
-                passages, and more recently with desktop publishing software
-                like Aldus PageMaker including versions of Lorem Ipsum.Lorem
-                Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has been the industry's standard dummy
-                text ever since the 1500s, when an unknown printer took a galley
-                of type and scrambled it to make a type specimen book. It has
-                survived not only five centuries, but also the leap into
-                electronic typesetting, remaining essentially unchanged. It was
-                popularised in the 1960s with the release of Letraset sheets
-                containing Lorem Ipsum passages, and more recently with desktop
-                publishing software like Aldus PageMaker including versions of
-                Lorem Ipsum.
-              </p>
+              {drafterText ? (
+                <p
+                  className="m-0 p-2 text-sm text-black h-full overflow-auto"
+                  // dangerouslySetInnerHTML={{
+                  //   __html: drafterText,
+                  // }}
+                >
+                  <Markdown>{drafterText}</Markdown>
+                </p>
+              ) : (
+                <div className="h-full flex justify-center items-center">
+                  <img className="h-28 w-28" src={loader} />
+                </div>
+              )}
             </div>
             <div className="h-full bg-[#046162] rounded-md flex flex-col gap-2 p-2">
               {!promptTextbox ? (
@@ -80,7 +94,10 @@ const AiDrafter = () => {
                   <p className="h-[40vh] overflow-auto text-sm m-0">
                     {promptText}
                   </p>
-                  <button className="bg-[#002828] rounded text-white py-2">
+                  <button
+                    onClick={handleEditDoc}
+                    className="bg-[#002828] rounded text-white py-2"
+                  >
                     Confirm Update Document
                   </button>
                   <button

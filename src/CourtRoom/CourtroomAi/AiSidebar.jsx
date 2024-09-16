@@ -33,18 +33,17 @@ import oldCaseLogo from "../../assets/sideMenubar/oldCase.png";
 import newCaseLogo from "../../assets/sideMenubar/newCase.png";
 import homeLogo from "../../assets/sideMenubar/homeLogo.png";
 import exitLogo from "../../assets/sideMenubar/exitLogo.png";
+import {
+  removeDrafter,
+  retrieveDrafterQuestions,
+} from "../../features/laws/drafterSlice";
 
 const drafterQuestions = [
-  "Lorem Ipsum is simply dummy text of the printing ",
-  "Lorem Ipsum is simply dummy text of the printing",
-  "Lorem Ipsum is simply dummy text of the printing",
-  "Lorem Ipsum is simply dummy text of the printing",
-  "Lorem Ipsum is simply dummy text of the printing",
-  "Lorem Ipsum is simply dummy text of the printing",
-  "Lorem Ipsum is simply dummy text of the printing",
-  "Lorem Ipsum is simply dummy text of the printing",
-  "Lorem Ipsum is simply dummy text of the printing",
-  "Lorem Ipsum is simply dummy text of the printing",
+  { name: "Bail Application", value: "bail_application" },
+  { name: "Civil Appeal", value: "civil_appeal" },
+  { name: "Civil Petition", value: "civil_petition" },
+  { name: "Criminal Appeal", value: "criminal_appeal" },
+  { name: "Criminal Petition", value: "criminal_petition" },
 ];
 
 const TimerComponent = React.memo(({ ExitToCourtroom }) => {
@@ -115,6 +114,7 @@ const TimerComponent = React.memo(({ ExitToCourtroom }) => {
             position: "absolute",
             left: "0",
             right: "0",
+            top: "0",
             backgroundColor: "rgba(0, 0, 0, 0.1)",
             backdropFilter: "blur(3px)",
             display: "flex",
@@ -684,6 +684,14 @@ const AiSidebar = () => {
   const hoverAnimations = {
     true: { scale: 1.01 },
     false: {},
+  };
+
+  const handleDrafterQuestions = (action) => {
+    dispatch(removeDrafter());
+    setShowDrafterQuestions(false);
+    dispatch(
+      retrieveDrafterQuestions({ query: action, token: currentUser.token })
+    );
   };
 
   return (
@@ -1679,7 +1687,7 @@ const AiSidebar = () => {
           <div className="w-2/5 h-[90%] bg-[#D9D9D9] rounded p-3">
             <div className="flex  flex-row justify-between items-start w-full">
               <div className="flex  flex-col justify-center items-start">
-                <h1 className="px-10 text-xl font-semibold text-teal-700 text-left">
+                <h1 className="px-2 text-xl font-semibold text-teal-700 text-left">
                   AI Drafter
                 </h1>
               </div>
@@ -1691,34 +1699,26 @@ const AiSidebar = () => {
               </div>
             </div>
             <div className="h-[90%] flex overflow-auto items-center justify-center py-3 ">
-              {aiDrafterQuestions.length === 0 ? (
-                <div className="h-[90%] w-full">
-                  {drafterQuestions.map((x, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between gap-3 items-center m-1"
-                    >
-                      <p className="flex-1 text-black text-sm m-0 bg-[#00808034] px-3 py-2 rounded-md">
-                        {x}
-                      </p>
-                      <Link to={"/courtroom-ai/aiDraft"}>
-                        <button
-                          onClick={() => setShowDrafterQuestions(false)}
-                          className="py-2 px-4 bg-[#008080] rounded-md text-sm text-white"
-                        >
-                          Create
-                        </button>
-                      </Link>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                // <p className="text-black text-sm h-[90%]">Hello</p>
-                <div className="h-full flex justify-center items-center">
-                  {" "}
-                  <img alt="loading" src={loader} className="w-28 h-28" />
-                </div>
-              )}
+              <div className="h-[90%] w-full">
+                {drafterQuestions.map((x, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between gap-3 items-center m-1"
+                  >
+                    <p className="flex-1 text-black text-sm m-0 bg-[#00808034] px-3 py-2 rounded-md">
+                      {x.name}
+                    </p>
+                    <Link to={"/courtroom-ai/aiDraft"}>
+                      <button
+                        onClick={() => handleDrafterQuestions(x.value)}
+                        className="py-2 px-4 bg-[#008080] rounded-md text-sm text-white"
+                      >
+                        Create
+                      </button>
+                    </Link>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
