@@ -101,15 +101,34 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
     fileInput.addEventListener("change", async (event) => {
       const files = Array.from(event.target.files);
       if (files.length > 0) {
+        const maxFileSize = 15 * 1024 * 1024; // 15 MB in bytes
+        const validFiles = [];
+
+        for (const file of files) {
+          if (file.size <= maxFileSize) {
+            validFiles.push(file);
+          } else {
+            toast.error(
+              `File uploaded exceeds the 15 MB limit.Please try another file`
+            );
+          }
+        }
+
+        if (validFiles.length === 0) {
+          return; // No valid files, exit the function
+        }
         setUploading(true);
 
         const formData = new FormData();
-        files.forEach((file, index) => {
-          if (index === 0) {
-            formData.append(`file`, file); // Append all files under the same key
-          } else {
-            formData.append(`file${index}`, file); // Append all files under the same key
-          }
+        // files.forEach((file, index) => {
+        //   if (index === 0) {
+        //     formData.append(`file`, file); // Append all files under the same key
+        //   } else {
+        //     formData.append(`file${index}`, file); // Append all files under the same key
+        //   }
+        // });
+        validFiles.forEach((file, index) => {
+          formData.append(`file${index === 0 ? "" : index}`, file); // Append files under the same key
         });
         formData.append("isMultilang", multilingualSupport);
         try {
