@@ -13,7 +13,10 @@ import analyze from "../../assets/icons/Animation - 1721467138603.json";
 import axios from "axios";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { useDispatch } from "react-redux";
-import { setOverview } from "../../features/bookCourtRoom/LoginReducreSlice";
+import {
+  setFightingSideModal,
+  setOverview,
+} from "../../features/bookCourtRoom/LoginReducreSlice";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import uploadImage from "../../assets/images/uploading.gif";
@@ -60,11 +63,13 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
         }
       );
       dispatch(setOverview(inputText));
+      dispatch(setFightingSideModal(true));
       setUploading(false);
       setAnalyzing(false);
       setUploadComplete(false);
       setPreviewContent("");
     } catch (error) {
+      console.log(error);
       if (error.response.data.error.explanation === "Please refresh the page") {
         toast.error("Please refresh the page");
         return;

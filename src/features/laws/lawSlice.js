@@ -35,6 +35,9 @@ const lawSlice = createSlice({
     caseLaws: null,
   },
   reducers: {
+    setCaseLaws(state, action) {
+      state.caseLaws = action.payload;
+    },
     removeCaseLaws(state) {
       state.caseLaws = null;
     },
@@ -49,7 +52,7 @@ const lawSlice = createSlice({
 });
 
 // Export the action creators
-export const { removeCaseLaws } = lawSlice.actions;
+export const { setCaseLaws, removeCaseLaws } = lawSlice.actions;
 
 // Export the reducer to be used in the store
 export default lawSlice.reducer;

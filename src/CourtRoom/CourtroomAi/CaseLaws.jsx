@@ -31,6 +31,33 @@ const courtIdMapping = [
   { name: "Rajasthan High Court", id: "153TCPW0SuDtXQzlgLUtqES3uwVUkaMtu" },
 ];
 
+const newcourtIdMapping = [
+  {
+    name: "Supreme Court of India",
+    id: "1xe5a_r6_5bm9QO3_znBo9Y5ly7xpNOdl",
+  },
+  { name: "Chattisgarh High Court", id: "1e7GbahAfohsiF7w1_nCKWc7gr69ctOKO" },
+  { name: "Sikkim High Court", id: "1BPtm3lqfX-PCErzoNByDwH0xlHpBKHtG" },
+  { name: "Uttarakhand High Court", id: "1Cfd6hntom_pLJMv4_GHKec0oZAe2DIGu" },
+  { name: "Calcutta High Court", id: "13kZvkMfQUqqE4TJHk1zT0R9EJ4vsm7Y_" },
+  { name: "Kerela High Court", id: "18IEun-9TPt0tywiGmuKheHWmdkJ6N7PC" },
+  { name: "Karnataka High Court", id: "1b3C4lv_sASf7Et4wS2me_dSp1T08NN-e" },
+  {
+    name: "Jammu and Kashmir High Court",
+    id: "1xroQ7bjQPDiTpPWfAi5YDbMeM1MPlNOH",
+  },
+  { name: "Jharkhand High Court", id: "1iQOmzXhtTPa2G7C-pGwcVorkrUFBATTh" },
+  { name: "Delhi High Court", id: "1uLtctLYbGYy26A3KbUs8Wh2SwMq6WbpF" },
+  { name: "Delhi District Court", id: "1NCDpBZGjKIGEYaq-7JPX2rTNDwi48YBv" },
+  {
+    name: "Madhya Pradesh High Court",
+    id: "1qFppmDox-fKOcPFW4FGedfCsIsOWUF8i",
+  },
+  { name: "Allahabad High Court", id: "1e_EdyqEQkCEW3pXFEo9eFweVGYoiwQRW" },
+  { name: "Gujarat High Court", id: "1GWbg3GnvbseAGRfCvQt6ImhXgsg4ZfXl" },
+  { name: "Rajasthan High Court", id: "18VP7y7NKx8jwSq87T2iSUEh4KnDyImOX" },
+];
+
 const CaseLaws = () => {
   const caseLaws = useSelector((state) => state.laws.caseLaws);
   const currentUser = useSelector((state) => state.user.user);
@@ -41,14 +68,23 @@ const CaseLaws = () => {
   const [loading, setLoading] = useState(false);
   const [documentData, setDocumentData] = useState("");
 
-  const handleOpen = async (court, caseId) => {
+  const handleOpen = async (court, caseId, date) => {
     setModalOpen(true);
     setLoading(true);
-    const findFileId = courtIdMapping.find(
-      (x) =>
-        x.name.split(" ").join("").toLowerCase() ===
-        court.split(" ").join("").toLowerCase()
-    );
+    let findFileId;
+    if (new Date(date) < new Date("16-July-2024")) {
+      findFileId = courtIdMapping.find(
+        (x) =>
+          x.name.split(" ").join("").toLowerCase() ===
+          court.split(" ").join("").toLowerCase()
+      );
+    } else {
+      findFileId = newcourtIdMapping.find(
+        (x) =>
+          x.name.split(" ").join("").toLowerCase() ===
+          court.split(" ").join("").toLowerCase()
+      );
+    }
     const fieldId = findFileId.id.toString();
     try {
       const props = await fetch(
@@ -64,7 +100,17 @@ const CaseLaws = () => {
       );
       const parsedProps = await props.json();
       console.log(parsedProps);
-      setDocumentData(parsedProps.data.viewDocument.content);
+      const reqContent = parsedProps.data.viewDocument.content
+        .replaceAll("\\\\n\\\\n", "<br/>")
+        .replaceAll("\\\\n", "<br/>")
+        .replaceAll("\\n\\n", "<br/>")
+        .replaceAll("\\n", "<br/>")
+        .replaceAll("\n", "<br/>")
+        .replaceAll("\\", "")
+        .replaceAll('"', "")
+        .replaceAll(":", " :")
+        .replaceAll("#", "");
+      setDocumentData(reqContent);
       setLoading(false);
     } catch (error) {
       console.log(error);
@@ -124,7 +170,7 @@ const CaseLaws = () => {
 
                     <button
                       onClick={() => {
-                        handleOpen(x.court, x.case_id);
+                        handleOpen(x.court, x.case_id, x.Date);
                       }}
                       style={{
                         border: "none",
@@ -205,8 +251,11 @@ const CaseLaws = () => {
                                 fontWeight: 500,
                                 fontFamily: "serif",
                               }}
+                              dangerouslySetInnerHTML={{
+                                __html: documentData,
+                              }}
                             >
-                              <Markdown>{documentData}</Markdown>
+                              {/* <Markdown>{documentData}</Markdown> */}
                             </div>
                           )}
                         </div>

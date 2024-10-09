@@ -12,6 +12,7 @@ import { MenuItem, IconButton } from "@mui/material";
 import { Popover } from "@mui/material";
 import {
   logout,
+  setFirstDraftAction,
   setOverview,
 } from "../../features/bookCourtRoom/LoginReducreSlice";
 import aiAssistant from "../../assets/images/aiAssistant.png";
@@ -37,7 +38,12 @@ import {
   removeDrafter,
   retrieveDrafterQuestions,
 } from "../../features/laws/drafterSlice";
-import { removeCaseLaws, retrieveCaseLaws } from "../../features/laws/lawSlice";
+import {
+  removeCaseLaws,
+  retrieveCaseLaws,
+  setCaseLaws,
+} from "../../features/laws/lawSlice";
+import evidenceLoad from "../../assets/images/evidenceLoad.gif";
 
 const drafterQuestions = [
   { name: "Bail Application", value: "bail_application" },
@@ -176,6 +182,9 @@ const AiSidebar = () => {
   const [testimonyAnchorEl, setTestimonyAnchorEl] = useState(null);
   const [aiDrafterQuestions, setAiDrafterQuestions] = useState([]);
   const [showDrafterQuestions, setShowDrafterQuestions] = useState(false);
+  const [caseSearchDialog, setCaseSearchDialog] = useState(false);
+  const [caseSearchPrompt, setCaseSearchPrompt] = useState("");
+  const [caseSearchLoading, setCaseSearchLoading] = useState(false);
 
   const charsPerPage = 1000; // Define this value outside the function
 
@@ -233,6 +242,7 @@ const AiSidebar = () => {
   const evidenceAccess = useSelector(
     (state) => state?.user?.user?.courtroomFeatures?.Evidences
   );
+  const firstDraftDetails = useSelector((state) => state.user.firstDraft);
 
   const [editDialog, setEditDialog] = useState(false);
   const [firstDraftDialog, setFirstDraftDialog] = useState(false);
@@ -444,7 +454,12 @@ const AiSidebar = () => {
               },
             }
           );
-          setFirstDraft(response.data.data.draft.detailed_draft);
+          // setFirstDraft(response.data.data.draft.detailed_draft);
+          dispatch(
+            setFirstDraftAction({
+              draft: response?.data?.data?.draft?.detailed_draft,
+            })
+          );
         } catch (error) {
           if (
             error.response.data.error.explanation === "Please refresh the page"
@@ -461,6 +476,10 @@ const AiSidebar = () => {
       firstDraftApi();
     }
   }, [overViewDetails]);
+
+  useEffect(() => {
+    setFirstDraft(firstDraftDetails);
+  }, [firstDraftDetails]);
 
   const getAiQuestions = async () => {
     setAiAssistantLoading(true);
@@ -695,6 +714,34 @@ const AiSidebar = () => {
     dispatch(
       retrieveDrafterQuestions({ query: action, token: currentUser.token })
     );
+  };
+
+  const handleCaseSearchPrompt = async () => {
+    setCaseSearchLoading(true);
+    try {
+      const response = await fetch(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/sidebar-casesearch`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+          body: JSON.stringify({ context: caseSearchPrompt }),
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      dispatch(removeCaseLaws());
+      dispatch(setCaseLaws(data.data.FetchedSidebarCasesearch.relatedCases));
+      setCaseSearchLoading(false);
+      setCaseSearchDialog(false);
+      setCaseSearchPrompt("");
+      navigate("/courtroom-ai/caseLaws");
+    } catch (error) {
+      console.log(error);
+      setCaseSearchLoading(false);
+    }
   };
 
   return (
@@ -945,6 +992,7 @@ const AiSidebar = () => {
                 border: "2px solid white",
                 borderRadius: "5px",
                 cursor: "pointer",
+                marginBottom: "5px",
               }}
             >
               <div>
@@ -969,6 +1017,37 @@ const AiSidebar = () => {
               ) : (
                 ""
               )}
+            </motion.div>
+            <motion.div
+              onClick={() => setCaseSearchDialog(true)}
+              whileTap={{ scale: "0.95" }}
+              whileHover={{ scale: "1.01" }}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "0px 10px",
+                background: "#C5C5C5",
+                color: "#008080",
+                border: "2px solid white",
+                borderRadius: "5px",
+              }}
+            >
+              <div>
+                <p className="text-xs m-0">Case Search</p>
+              </div>
+              <div style={{ width: "15px", margin: "0" }}>
+                <svg
+                  width="24"
+                  height="24"
+                  style={{ fill: "#008080", cursor: "pointer" }}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                >
+                  <path d="M14 4h-13v18h20v-11h1v12h-22v-20h14v1zm10 5h-1v-6.293l-11.646 11.647-.708-.708 11.647-11.646h-6.293v-1h8v8z" />
+                </svg>
+              </div>
             </motion.div>
           </div>
           {aiAssistantAccess ? (
@@ -1748,6 +1827,74 @@ const AiSidebar = () => {
         </div>
       ) : (
         ""
+      )}
+      {caseSearchDialog && (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            left: "0",
+            right: "0",
+            top: "0",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: "10",
+          }}
+        >
+          <main className="w-2/4 p-3 flex flex-col justify-center items-center bg-white rounded">
+            <>
+              {/* //header */}
+              <section className="flex flex-row justify-between items-start w-full">
+                <div className="flex flex-col justify-center items-start">
+                  <h1 className="text-lg font-semibold text-teal-700 text-left">
+                    Case Search
+                  </h1>
+                  <h3 className="text-xs font-light text-neutral-600">
+                    Enter prompt to search for cases
+                  </h3>
+                </div>
+                <div className="cursor-pointer text-teal-800">
+                  <Close
+                    onClick={() => {
+                      setCaseSearchDialog(false);
+                      setCaseSearchPrompt("");
+                    }}
+                  />
+                </div>
+              </section>
+              {/* header ends */}
+              {!caseSearchLoading ? (
+                <>
+                  <section className="w-full">
+                    <textarea
+                      required
+                      value={caseSearchPrompt}
+                      onChange={(e) => setCaseSearchPrompt(e.target.value)}
+                      placeholder="Enter your search details here..."
+                      rows={12}
+                      className="w-full resize-none bg-[#00808030] text-black rounded-md p-2"
+                    />
+                  </section>
+
+                  <section className="flex space-x-5 flex-row w-full items-center justify-end">
+                    <button
+                      onClick={() => handleCaseSearchPrompt()}
+                      className="bg-teal-800 cursor-pointer py-1 px-3 rounded"
+                    >
+                      Search
+                    </button>
+                  </section>
+                </>
+              ) : (
+                <section className="w-full flex items-center justify-center p-20">
+                  <img className="w-48 h-48" src={evidenceLoad} alt="loading" />
+                </section>
+              )}
+            </>
+          </main>
+        </div>
       )}
     </>
   );
