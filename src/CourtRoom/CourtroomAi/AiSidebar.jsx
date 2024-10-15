@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Menu } from "@mui/material";
+import { Button, CircularProgress, Menu } from "@mui/material";
 import { ArrowRight, Close, Download } from "@mui/icons-material";
 import { ArrowLeft } from "@mui/icons-material";
 import { MenuItem, IconButton } from "@mui/material";
@@ -44,6 +44,8 @@ import {
   setCaseLaws,
 } from "../../features/laws/lawSlice";
 import evidenceLoad from "../../assets/images/evidenceLoad.gif";
+import { decryptData, encryptData } from "../../utils/encryption";
+import sendIcon from "../../assets/icons/Send.png";
 
 const drafterQuestions = [
   { name: "Bail Application", value: "bail_application" },
@@ -185,6 +187,7 @@ const AiSidebar = () => {
   const [caseSearchDialog, setCaseSearchDialog] = useState(false);
   const [caseSearchPrompt, setCaseSearchPrompt] = useState("");
   const [caseSearchLoading, setCaseSearchLoading] = useState(false);
+  const [nextAppealLoading, setNextAppealLoading] = useState(false);
 
   const charsPerPage = 1000; // Define this value outside the function
 
@@ -243,6 +246,7 @@ const AiSidebar = () => {
     (state) => state?.user?.user?.courtroomFeatures?.Evidences
   );
   const firstDraftDetails = useSelector((state) => state.user.firstDraft);
+  const authKey = useSelector((state) => state.user.authKey);
 
   const [editDialog, setEditDialog] = useState(false);
   const [firstDraftDialog, setFirstDraftDialog] = useState(false);
@@ -308,11 +312,13 @@ const AiSidebar = () => {
       }
 
       const data = await fetchedData.json();
-      const formattedData = formatText(
-        data.data.relevantCases.relevant_case_law
+      const decryptedData = decryptData(
+        data.data.relevantCases.relevant_case_law,
+        authKey
       );
-      setRelevantLawData(data.data.relevantCases.relevant_case_law);
-      console.log(data.data.relevantCases.relevant_case_law);
+      const formattedData = formatText(decryptedData);
+      setRelevantLawData(decryptedData);
+      // console.log(decryptedData);
       setRelevantCaseLoading(false);
       setRelevantLawsArr(formattedData);
     } catch (error) {
@@ -389,7 +395,7 @@ const AiSidebar = () => {
         toast.error("Please refresh the page");
         return;
       }
-      toast.error("Error in saving history");
+      // toast.error("Error in saving history");
       console.error("Error in saving history", error);
     }
   };
@@ -400,7 +406,7 @@ const AiSidebar = () => {
         `${NODE_API_ENDPOINT}/specificLawyerCourtroom/edit_case`,
         {
           // user_id: currentUser.userId,
-          case_overview: text,
+          case_overview: encryptData(text, authKey),
         },
         {
           headers: {
@@ -419,6 +425,7 @@ const AiSidebar = () => {
       console.error("Error in saving case", error);
     }
   };
+
   const handleFirstDraft = async () => {
     if (isApi) {
       setFirsDraftLoading(true);
@@ -455,9 +462,13 @@ const AiSidebar = () => {
             }
           );
           // setFirstDraft(response.data.data.draft.detailed_draft);
+          const decryptedData = decryptData(
+            response?.data?.data?.draft?.detailed_draft,
+            authKey
+          );
           dispatch(
             setFirstDraftAction({
-              draft: response?.data?.data?.draft?.detailed_draft,
+              draft: decryptedData,
             })
           );
         } catch (error) {
@@ -495,12 +506,14 @@ const AiSidebar = () => {
           },
         }
       );
-      console.log(
-        response.data.data.hallucinationQuestions.assistant_questions
+      // console.log(
+      //   response.data.data.hallucinationQuestions.assistant_questions
+      // );
+      const decryptedText = decryptData(
+        response.data.data.hallucinationQuestions.assistant_questions,
+        authKey
       );
-      setAiQuestions(
-        response.data.data.hallucinationQuestions.assistant_questions
-      );
+      setAiQuestions(decryptedText);
       setAiAssistantLoading(false);
     } catch (error) {
       if (error.response.data.error.explanation === "Please refresh the page") {
@@ -531,7 +544,11 @@ const AiSidebar = () => {
         if (overView.data.data.case_overview === "NA") {
           dispatch(setOverview(""));
         } else {
-          dispatch(setOverview(overView.data.data.case_overview));
+          const decryptedData = decryptData(
+            overView.data.data.case_overview,
+            authKey
+          );
+          dispatch(setOverview(decryptedData));
         }
       } catch (error) {
         if (
@@ -654,7 +671,8 @@ const AiSidebar = () => {
     try {
       setSearchQuery(true);
       const getResponse = await fetch(
-        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/ask_query`,
+        // `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/ask_query`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/consultant`,
         {
           method: "POST",
           headers: {
@@ -662,7 +680,7 @@ const AiSidebar = () => {
             Authorization: `Bearer ${currentUser.token}`,
           },
           body: JSON.stringify({
-            action: "Generate",
+            // action: "Generate",
             query: askLegalGptPrompt,
           }),
         }
@@ -680,9 +698,15 @@ const AiSidebar = () => {
 
       const responseData = await getResponse.json();
 
-      const data = responseData.data.fetchedAskQuery.answer;
+      // const decryptedData = decryptData(
+      //   responseData.data.fetchedConsultant.Answer,
+      //   authKey
+      // );
 
-      console.log(data);
+      // const data = decryptedData;
+      const data = responseData.data.fetchedConsultant.Answer;
+
+      // console.log(data);
 
       setPromptArr([
         ...promptArr,
@@ -694,6 +718,11 @@ const AiSidebar = () => {
     } catch (error) {
       console.error("Error in getting response:", error);
       toast.error("Error in getting response");
+
+      setSearchQuery(false);
+      let newArr = promptArr;
+      newArr.pop();
+      setPromptArr(newArr);
     }
     // setAskLegalGptPrompt(null);
   };
@@ -712,7 +741,11 @@ const AiSidebar = () => {
     dispatch(removeDrafter());
     setShowDrafterQuestions(false);
     dispatch(
-      retrieveDrafterQuestions({ query: action, token: currentUser.token })
+      retrieveDrafterQuestions({
+        query: action,
+        token: currentUser.token,
+        key: authKey,
+      })
     );
   };
 
@@ -741,6 +774,29 @@ const AiSidebar = () => {
     } catch (error) {
       console.log(error);
       setCaseSearchLoading(false);
+    }
+  };
+
+  const handleNextAppeal = async () => {
+    setNextAppealLoading(true);
+    try {
+      const response = await fetch(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/draft_next_appeal`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      // console.log(data);
+      setNextAppealLoading(false);
+      toast.success("Next appeal successfull");
+    } catch (error) {
+      console.log(error);
+      setNextAppealLoading(false);
     }
   };
 
@@ -785,6 +841,7 @@ const AiSidebar = () => {
                 </motion.button> */}
                 <div>
                   <IconButton
+                    sx={{ color: "white" }}
                     aria-label="more"
                     aria-controls="long-menu"
                     aria-haspopup="true"
@@ -1277,9 +1334,9 @@ const AiSidebar = () => {
                 </svg>
               </div>
               <div className="m-0 h-2/3 flex flex-column justify-center items-center">
-                <div className="flex h-full px-5 pb-5 flex-row justify-between items-center w-full gap-5">
-                  <div className="flex h-full  flex-row justify-center w-full items-center">
-                    <div className="flex flex-col w-full rounded-md bg-white text-black h-[80vh] overflow-y-auto">
+                <div className="flex h-full px-5 pb-3 flex-row justify-between items-center w-full gap-5">
+                  <div className="flex h-full  flex-col gap-2 justify-center w-full items-center">
+                    <div className="flex flex-col w-full rounded-md bg-white text-black h-[75vh] overflow-y-auto">
                       <div className="w-full px-2 h-fit my-2 items-center flex flex-row ">
                         <p className="uppercase font-bold my-2 w-full ">
                           First Draft Preview
@@ -1301,8 +1358,20 @@ const AiSidebar = () => {
                         onChange={(e) => setFirstDraft(e.target.value)}
                       />
                     </div>
+                    <div className="w-full flex justify-end">
+                      <button
+                        onClick={handleNextAppeal}
+                        className="px-4 py-1 rounded border"
+                      >
+                        {nextAppealLoading ? (
+                          <CircularProgress size={15} color="inherit" />
+                        ) : (
+                          "Next Appeal"
+                        )}
+                      </button>
+                    </div>
                   </div>
-                  <div className="h-[80vh] w-1 bg-neutral-200/40" />
+                  <div className="h-[75vh] w-1 bg-neutral-200/40" />
                   <div className="flex flex-col justify-between h-full w-full gap-4 ">
                     {showRelevantLaws ? (
                       <div className="overflow-auto border-2 border-white rounded bg-white text-black p-2">
@@ -1653,12 +1722,8 @@ const AiSidebar = () => {
                   type="submit"
                   disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
-                  className="px-3 rounded"
-                  style={{
-                    background: "linear-gradient(180deg, #008080,#001A1A)",
-                  }}
                 >
-                  Send
+                  <img className="w-9 h-9" src={sendIcon} />
                 </motion.button>
               </form>
             </div>
@@ -1701,10 +1766,15 @@ const AiSidebar = () => {
                 <div className="">
                   {promptArr.length > 0 &&
                     promptArr.map((x, index) => (
-                      <div className="" key={index}>
-                        <div className="flex flex-col">
-                          <div className="flex gap-3">
-                            <svg
+                      <div
+                        className="flex flex-col"
+                        style={{
+                          alignSelf: x.prompt ? "flex-start" : "flex-end",
+                        }}
+                        key={index}
+                      >
+                        <div className="flex gap-3">
+                          {/* <svg
                               fill="white"
                               xmlns="http://www.w3.org/2000/svg"
                               width="24"
@@ -1712,21 +1782,25 @@ const AiSidebar = () => {
                               viewBox="0 0 24 24"
                             >
                               <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm7.753 18.305c-.261-.586-.789-.991-1.871-1.241-2.293-.529-4.428-.993-3.393-2.945 3.145-5.942.833-9.119-2.489-9.119-3.388 0-5.644 3.299-2.489 9.119 1.066 1.964-1.148 2.427-3.393 2.945-1.084.25-1.608.658-1.867 1.246-1.405-1.723-2.251-3.919-2.251-6.31 0-5.514 4.486-10 10-10s10 4.486 10 10c0 2.389-.845 4.583-2.247 6.305z" />
-                            </svg>
-                            <p>{x.prompt}</p>
+                            </svg> */}
+                          <p className="bg-[#D9D9D9]  text-black p-2 text-sm rounded-t-xl rounded-r-xl max-w-[75%]">
+                            {x.prompt}
+                          </p>
+                        </div>
+                        <div className="w-full flex justify-end">
+                          <div className="w-5/6 flex justify-end">
+                            {x.promptResponse ? (
+                              <p className=" bg-[#00C37B] p-2 text-sm text-black rounded-t-xl rounded-l-xl">
+                                <Markdown>{x.promptResponse}</Markdown>
+                              </p>
+                            ) : (
+                              <div className="bg-[#00C37B] p-2 text-sm text-black rounded-t-xl rounded-l-xl flex flex-col justify-end gap-1 w-14 mb-2">
+                                <div className="w-full h-1 bg-slate-600 animate-pulse  rounded-full"></div>
+                                <div className="w-[60%] h-1 bg-slate-600 animate-pulse  rounded-full"></div>
+                                <div className="w-[40%] h-1 bg-slate-600 animate-pulse  rounded-full"></div>
+                              </div>
+                            )}
                           </div>
-                          {x.promptResponse ? (
-                            <p className="border-2 border-white rounded bg-[#008080] p-2 text-sm">
-                              {x.promptResponse}
-                            </p>
-                          ) : (
-                            <div className="h-full w-full flex flex-col gap-2">
-                              <div className="w-full h-3 bg-slate-600 animate-pulse  rounded-full"></div>
-                              <div className="w-full h-3 bg-slate-600 animate-pulse  rounded-full"></div>
-                              <div className="w-[60%] h-3 bg-slate-600 animate-pulse  rounded-full"></div>
-                              <div className="w-[40%] h-3 bg-slate-600 animate-pulse  rounded-full"></div>
-                            </div>
-                          )}
                         </div>
                       </div>
                     ))}
@@ -1746,9 +1820,10 @@ const AiSidebar = () => {
                   ]);
                   setAskLegalGptPrompt("");
                 }}
-                className="px-4 flex gap-2 py-3"
+                className="px-4 flex gap-2 py-3 items-center"
               >
                 <input
+                  required
                   className="flex-1 p-2 rounded text-black"
                   placeholder="Enter Your Query Here"
                   value={askLegalGptPrompt}
@@ -1758,12 +1833,8 @@ const AiSidebar = () => {
                   type="submit"
                   disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
-                  className="px-3 rounded"
-                  style={{
-                    background: "linear-gradient(180deg, #008080,#001A1A)",
-                  }}
                 >
-                  Send
+                  <img className="w-9 h-9" src={sendIcon} />
                 </motion.button>
               </form>
             </div>

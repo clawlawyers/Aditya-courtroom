@@ -9,9 +9,13 @@ import {
 } from "../../utils/firebase";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { useDispatch } from "react-redux";
-import { login } from "../../features/bookCourtRoom/LoginReducreSlice";
+import {
+  login,
+  setAuthKey,
+} from "../../features/bookCourtRoom/LoginReducreSlice";
 import { data } from "autoprefixer";
 import { motion } from "framer-motion";
+import { decryptData } from "../../utils/encryption";
 
 const OtpCard = () => {
   const [phoneNumber, setPhoneNumber] = useState();
@@ -109,6 +113,13 @@ const OtpCard = () => {
         }
         const parsedProps = await props.json();
         console.log(parsedProps.data);
+        const decryptKey = decryptData(
+          parsedProps?.data?.key,
+          process.env.REACT_APP_KEY
+        );
+        console.log(decryptKey);
+        dispatch(setAuthKey({ key: decryptKey }));
+        // localStorage.setItem("auth-key", JSON.stringify(decryptKey));
         dispatch(login({ user: parsedProps.data }));
         navigate("/courtroom-ai");
       })

@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { useSelector } from "react-redux";
 import evidenceLoad from "../../assets/images/evidenceLoad.gif";
+import { decryptData, encryptData } from "../../utils/encryption";
 
 const TestimonyDialog = ({ handleTestimonyClose }) => {
   const [testimony, setTestimony] = useState("");
@@ -11,6 +12,7 @@ const TestimonyDialog = ({ handleTestimonyClose }) => {
   const [testimonyRelevance, setTestimonyRelevance] = useState("");
   const [loading, setLoading] = useState(false);
   const currentUser = useSelector((state) => state.user.user);
+  const authKey = useSelector((state) => state.user.authKey);
 
   const handleChangeTestimony = (e) => {
     setTestimony(e.target.value);
@@ -29,7 +31,7 @@ const TestimonyDialog = ({ handleTestimonyClose }) => {
             Authorization: `Bearer ${currentUser.token}`,
           },
           body: JSON.stringify({
-            testimony_statement: testimony,
+            testimony_statement: encryptData(testimony, authKey),
           }),
         }
       );
@@ -37,13 +39,27 @@ const TestimonyDialog = ({ handleTestimonyClose }) => {
         throw new Error("API request failed");
       }
       const data = await fetchData.json();
-      console.log(
-        "API response:",
-        data.data.testimonyQuestions.testimony_questions
-      );
+      // console.log(
+      //   "API response:",
+      //   data.data.testimonyQuestions.testimony_questions
+      // );
       toast.success("Testimony submitted successfully");
       setTestimonyGenerated(true);
-      setTestimonyRelevance(data.data.testimonyQuestions.testimony_questions);
+      const decryptedData = decryptData(
+        data.data.testimonyQuestions.testimony_questions,
+        authKey
+      );
+      const formatData = decryptedData
+        .replaceAll("\\\\n\\\\n", "\n")
+        .replaceAll("\\\\n", "\n")
+        .replaceAll("\\n\\n", "\n")
+        .replaceAll("\\n", "\n")
+        .replaceAll("\n", "\n")
+        .replaceAll("\\", "")
+        .replaceAll('"', "")
+        .replaceAll(":", " :")
+        .replaceAll("#", "");
+      setTestimonyRelevance(formatData);
       setLoading(false);
     } catch (error) {
       setLoading(false);

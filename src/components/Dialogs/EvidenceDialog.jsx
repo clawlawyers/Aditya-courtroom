@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { useSelector } from "react-redux";
 import evidenceLoad from "../../assets/images/evidenceLoad.gif";
+import { decryptData } from "../../utils/encryption";
 
 const EvidenceDialog = ({ handleEvidenceClose }) => {
   const [evidence, setEvidence] = useState("");
@@ -13,6 +14,7 @@ const EvidenceDialog = ({ handleEvidenceClose }) => {
   const [loading, setLoading] = useState(false);
   // const [uploadedFiles, setUploadedFiles] = useState([]);
   const currentUser = useSelector((state) => state.user.user);
+  const authKey = useSelector((state) => state.user.authKey);
 
   const handleChangeEvidence = (e) => {
     setEvidence(e.target.value);
@@ -55,7 +57,21 @@ const EvidenceDialog = ({ handleEvidenceClose }) => {
       console.log("API response:", data);
       toast.success("Evidence submitted successfully");
       setEvidenceGenerated(true);
-      setEvidenceRelevance(data.data.fetchedEvidence.Evidence_Relevance);
+      const evidenceData = decryptData(
+        data.data.fetchedEvidence.Evidence_Relevance,
+        authKey
+      );
+      const formatData = evidenceData
+        .replaceAll("\\\\n\\\\n", "\n")
+        .replaceAll("\\\\n", "\n")
+        .replaceAll("\\n\\n", "\n")
+        .replaceAll("\\n", "\n")
+        .replaceAll("\n", "\n")
+        .replaceAll("\\", "")
+        .replaceAll('"', "")
+        .replaceAll(":", " :")
+        .replaceAll("#", "");
+      setEvidenceRelevance(formatData);
       setLoading(false);
       // handleEvidenceClose();
 

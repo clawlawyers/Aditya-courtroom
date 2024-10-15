@@ -24,6 +24,11 @@ import {
   setFightingSideModal,
   setFirstDraftAction,
 } from "../../features/bookCourtRoom/LoginReducreSlice";
+import {
+  decryptData,
+  decryptObject,
+  encryptData,
+} from "../../utils/encryption";
 
 // const userArgument = [
 //   "I feel your pain. This is such a simple function and yet they make it so amazingly complicated. I find the same nonsense with adding a simple border to an object. They have 400 ways to shade the color of a box, but not even 1 simple option for drawing a line around the box. I get the feeling the Figma designers don’t ever use their product",
@@ -48,6 +53,7 @@ const CourtroomArgument = () => {
   const verdictAccessRedux = useSelector(
     (state) => state?.user?.user?.courtroomFeatures?.Verdict
   );
+  const authKey = useSelector((state) => state.user.authKey);
   const fightingModal = useSelector((state) => state.user.fightingSideModal);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -71,6 +77,7 @@ const CourtroomArgument = () => {
   const [potentialObjections, setPotentialObjections] = useState("");
   const [objectionIndex, setObjectionIndex] = useState("");
 
+  const [anchorElObjection, setAnchorElObjection] = useState(null);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [verdictAccess, setVerdictAccess] = useState(false);
   const [voiceSearchInitiate, setVoiceSearchInitiate] = useState(false);
@@ -84,12 +91,15 @@ const CourtroomArgument = () => {
   const [otherFightType, setOtherFightType] = useState("");
 
   const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
+    setAnchorElObjection(event.currentTarget);
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setAnchorElObjection(null);
   };
+
+  const openObjection = Boolean(anchorElObjection);
+  const objectionId = openObjection ? "simple-popover" : undefined;
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -147,11 +157,13 @@ const CourtroomArgument = () => {
     setUserArgument(updatedArguments);
     setEditIndex(null);
 
+    const encryptedData = encryptData(editValue, authKey);
+
     const inserUserArgument = await axios.post(
       `${NODE_API_ENDPOINT}/specificLawyerCourtroom/user_arguemnt`,
       {
         // user_id: currentUser.userId,
-        argument: editValue,
+        argument: encryptedData,
         argument_index: index,
       },
       {
@@ -240,8 +252,8 @@ const CourtroomArgument = () => {
         laywerArgument1.data.data.lawyerArguemnt.counter_argument;
       const objection =
         laywerArgument1.data.data.lawyerArguemnt.potential_objection;
-      setLawyerArgument(laywerArgument);
-      setPotentialObjections(objection);
+      setLawyerArgument(decryptData(laywerArgument, authKey));
+      setPotentialObjections(decryptData(objection, authKey));
       setAiLawyerLoading(false);
 
       setAiJudgeLoading(true);
@@ -261,7 +273,7 @@ const CourtroomArgument = () => {
       );
 
       judgeArgument = judgeArgument.data.data.judgeArguemnt.judgement;
-      setJudgeArgument(judgeArgument);
+      setJudgeArgument(decryptData(judgeArgument, authKey));
 
       setAiJudgeLoading(false);
     } catch (error) {
@@ -318,8 +330,8 @@ const CourtroomArgument = () => {
         laywerArgument1.data.data.lawyerArguemnt.counter_argument;
       const objection =
         laywerArgument1.data.data.lawyerArguemnt.potential_objection;
-      setLawyerArgument(laywerArgument);
-      setPotentialObjections(objection);
+      setLawyerArgument(decryptData(laywerArgument, authKey));
+      setPotentialObjections(decryptData(objection, authKey));
       setAiLawyerLoading(false);
 
       setAiJudgeLoading(true);
@@ -339,8 +351,17 @@ const CourtroomArgument = () => {
       );
 
       judgeArgument = judgeArgument.data.data.judgeArguemnt.judgement;
-      setJudgeArgument(judgeArgument);
+      setJudgeArgument(decryptData(judgeArgument, authKey));
       setAiJudgeLoading(false);
+      await axios.post(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/summary`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        }
+      );
     } catch (error) {
       if (error.response.data.error.explanation === "Please refresh the page") {
         toast.error("Please refresh the page");
@@ -359,11 +380,13 @@ const CourtroomArgument = () => {
       setAiJudgeLoading(true);
       setAiLawyerLoading(true);
 
+      const encryptedData = encryptData(addArgumentInputText, authKey);
+
       const inserUserArgument = await axios.post(
         `${NODE_API_ENDPOINT}/specificLawyerCourtroom/user_arguemnt`,
         {
           // user_id: currentUser.userId,
-          argument: addArgumentInputText,
+          argument: encryptedData,
           argument_index: "NA",
         },
         {
@@ -411,17 +434,18 @@ const CourtroomArgument = () => {
           }
         );
 
-        setUserArgument(history.data.data.caseHistory.argument);
-        const lawyerArrLen =
-          history.data.data.caseHistory.counter_argument.length;
-        setLawyerArgument(
-          history.data.data.caseHistory.counter_argument[lawyerArrLen - 1]
+        const decryptedData = await decryptObject(
+          history.data.data.caseHistory,
+          decryptData,
+          authKey
         );
 
-        const judgeArrLen = history.data.data.caseHistory.judgement.length;
-        setJudgeArgument(
-          history.data.data.caseHistory.judgement[judgeArrLen - 1]
-        );
+        setUserArgument(decryptedData.argument);
+        const lawyerArrLen = decryptedData.counter_argument.length;
+        setLawyerArgument(decryptedData.counter_argument[lawyerArrLen - 1]);
+
+        const judgeArrLen = decryptedData.judgement.length;
+        setJudgeArgument(decryptedData.judgement[judgeArrLen - 1]);
       } catch (error) {
         if (
           error.response.data.error.explanation === "Please refresh the page"
@@ -471,11 +495,12 @@ const CourtroomArgument = () => {
     // console.log(data);
     setLoadingRelevantCases(true);
 
+    const encryptedData = encryptData(data, authKey);
     try {
       const res = await axios.post(
         `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_cases_judge_lawyer`,
         {
-          text_input: data,
+          text_input: encryptedData,
         },
         {
           headers: {
@@ -484,8 +509,12 @@ const CourtroomArgument = () => {
         }
       );
       // console.log(res);
-      setRelevantCasesData(res.data.data.relevantCases.relevant_case_law);
-      var data = res.data.data.relevantCases.relevant_case_law;
+      const decryptedData = decryptData(
+        res.data.data.relevantCases.relevant_case_law,
+        authKey
+      );
+      setRelevantCasesData(decryptedData);
+      var data = decryptedData;
       console.log(data);
       data = data.replace(/\\n/g, "<br/>");
       data = data.replace(/\\n\\n/g, "<br/><br/>");
@@ -544,9 +573,11 @@ const CourtroomArgument = () => {
 
       // console.log("response is ", response.data.data.draft.detailed_draft);
       // setFirstDraft(response.data.data.draft.detailed_draft);
-      dispatch(
-        setFirstDraftAction({ draft: response.data.data.draft.detailed_draft })
+      const decryptedData = decryptData(
+        response.data.data.draft.detailed_draft,
+        authKey
       );
+      dispatch(setFirstDraftAction({ draft: decryptedData }));
     } catch (error) {
       toast.error("Error in getting first draft");
     } finally {
@@ -586,6 +617,7 @@ const CourtroomArgument = () => {
               </div>
               <div>
                 <IconButton
+                  sx={{ color: "white" }}
                   aria-label="more"
                   aria-controls="long-menu"
                   aria-haspopup="true"
@@ -683,6 +715,7 @@ const CourtroomArgument = () => {
               <div>
                 {" "}
                 <IconButton
+                  sx={{ color: "white" }}
                   aria-label="more"
                   aria-controls="long-menu"
                   aria-haspopup="true"
@@ -886,7 +919,7 @@ const CourtroomArgument = () => {
                             e.stopPropagation();
                             setIsDialogOpen(true);
                             setObjectionIndex(index);
-                            setAnchorEl(e.currentTarget);
+                            handleClick(e);
                           }}
                           // onClick={handleClick}
                         ></button>
@@ -911,9 +944,9 @@ const CourtroomArgument = () => {
                                 // height: "250px",
                               }
                             }
-                            id={id}
-                            open={open}
-                            anchorEl={anchorEl}
+                            id={objectionId}
+                            open={openObjection}
+                            anchorEl={anchorElObjection}
                             onClose={handleClose}
                             anchorOrigin={{
                               vertical: "bottom",
@@ -1149,6 +1182,7 @@ const CourtroomArgument = () => {
               </div>
               <div>
                 <IconButton
+                  sx={{ color: "white" }}
                   aria-label="more"
                   aria-controls="long-menu"
                   aria-haspopup="true"
@@ -1251,6 +1285,7 @@ const CourtroomArgument = () => {
               <div>
                 {" "}
                 <IconButton
+                  sx={{ color: "white" }}
                   aria-label="more"
                   aria-controls="long-menu"
                   aria-haspopup="true"

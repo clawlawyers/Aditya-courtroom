@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
+import { decryptData } from "../../utils/encryption";
 
 export const retrieveCourtroomAuth = createAsyncThunk(
   "auth/retrieveAuth",
@@ -20,9 +21,14 @@ export const retrieveCourtroomAuth = createAsyncThunk(
         }
       );
       const parsedProps = await props.json();
-      // console.log(parsedProps);
+      const decryptedKey = decryptData(
+        parsedProps.data.key,
+        process.env.REACT_APP_KEY
+      );
+
       return {
         user: parsedProps.data,
+        key: decryptedKey,
       };
     } else return null;
   }
@@ -36,6 +42,7 @@ const userSlice = createSlice({
     caseOverview: "NA",
     firstDraft: "",
     fightingSideModal: false,
+    authKey: "",
   },
   reducers: {
     login(state, action) {
@@ -59,11 +66,15 @@ const userSlice = createSlice({
     setFirstDraftAction(state, action) {
       state.firstDraft = action.payload.draft;
     },
+    setAuthKey(state, action) {
+      state.authKey = action.payload.key;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(retrieveCourtroomAuth.fulfilled, (state, action) => {
       if (action.payload && action.payload.user) {
         state.user = action.payload.user;
+        state.authKey = action.payload.key;
       }
     });
   },
@@ -77,6 +88,7 @@ export const {
   setUser,
   setFightingSideModal,
   setFirstDraftAction,
+  setAuthKey,
 } = userSlice.actions;
 
 // Export the reducer to be used in the store

@@ -6,6 +6,7 @@ import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { CircularProgress, Modal } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Markdown from "react-markdown";
+import { decryptData } from "../../utils/encryption";
 
 const courtIdMapping = [
   { name: "Supreme Court of India", id: "1bgi-zbCWObiTNjkegNXryni4ZJzZyCFV" },
@@ -62,6 +63,8 @@ const CaseLaws = () => {
   const caseLaws = useSelector((state) => state.laws.caseLaws);
   const currentUser = useSelector((state) => state.user.user);
 
+  const authKey = useSelector((state) => state.user.authKey);
+
   const navigate = useNavigate();
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -99,8 +102,12 @@ const CaseLaws = () => {
         }
       );
       const parsedProps = await props.json();
-      console.log(parsedProps);
-      const reqContent = parsedProps.data.viewDocument.content
+      // console.log(parsedProps);
+      const decryptedData = decryptData(
+        parsedProps.data.viewDocument.content,
+        authKey
+      );
+      const reqContent = decryptedData
         .replaceAll("\\\\n\\\\n", "<br/>")
         .replaceAll("\\\\n", "<br/>")
         .replaceAll("\\n\\n", "<br/>")

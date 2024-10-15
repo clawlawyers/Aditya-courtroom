@@ -5,9 +5,12 @@ import { useSelector } from "react-redux";
 import LoadingDialog from "../../components/LoadingDialog";
 import DocumentViewer from "./DocumentViewer";
 import toast from "react-hot-toast";
+import { decryptData } from "../../utils/encryption";
 
 const Verdict = () => {
   const currentUser = useSelector((state) => state.user.user);
+  const authKey = useSelector((state) => state.user.authKey);
+
   const [verdict, setVerdict] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -28,7 +31,7 @@ const Verdict = () => {
         );
         const verdictText = response.data.data.restDetail.verdict;
         console.log("verdict text is", verdictText);
-        setVerdict(verdictText);
+        setVerdict(decryptData(verdictText, authKey));
       } catch (error) {
         if (
           error.response.data.error.explanation === "Please refresh the page"

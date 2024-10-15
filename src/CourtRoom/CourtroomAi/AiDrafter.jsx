@@ -6,10 +6,12 @@ import loader from "../../assets/images/evidenceLoad.gif";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { editDrafter, removeDrafter } from "../../features/laws/drafterSlice";
 import Markdown from "react-markdown";
+import { decryptData } from "../../utils/encryption";
 
 const AiDrafter = () => {
   const drafterDoc = useSelector((state) => state.drafter.drafterDoc);
   const currentUser = useSelector((state) => state.user.user);
+  const authKey = useSelector((state) => state.user.authKey);
 
   const [promptText, setPromptText] = useState("");
   const [promptTextbox, setPromptTextbox] = useState(false);
@@ -20,6 +22,13 @@ const AiDrafter = () => {
 
   const handleNavigation = () => {
     navigate(-1);
+  };
+
+  const formatText = (text) => {
+    return text
+      .replace(/\\n\\n/g, "<br/><br/>")
+      .replace(/\\n/g, "  <br/>")
+      .replace(/\\/g, " ");
   };
 
   const handleEditDoc = async () => {
@@ -37,9 +46,13 @@ const AiDrafter = () => {
         }
       );
       const parsedProps = await props.json();
+      const decryptedData = decryptData(
+        parsedProps.data.editApplication.application,
+        authKey
+      );
       dispatch(
         editDrafter({
-          drafterDoc: parsedProps.data.editApplication.application,
+          drafterDoc: decryptedData,
         })
       );
       setPromptTextbox(false);
@@ -50,7 +63,7 @@ const AiDrafter = () => {
   };
 
   useEffect(() => {
-    setDrafterText(drafterDoc);
+    setDrafterText(formatText(drafterDoc));
   }, [drafterDoc]);
 
   const handleDownload = async () => {
@@ -100,11 +113,11 @@ const AiDrafter = () => {
               {drafterText ? (
                 <p
                   className="m-0 p-2 text-sm text-black h-full overflow-auto"
-                  // dangerouslySetInnerHTML={{
-                  //   __html: drafterText,
-                  // }}
+                  dangerouslySetInnerHTML={{
+                    __html: drafterText,
+                  }}
                 >
-                  <Markdown>{drafterText}</Markdown>
+                  {/* <Markdown>{drafterText}</Markdown> */}
                 </p>
               ) : (
                 <div className="h-full flex justify-center items-center">

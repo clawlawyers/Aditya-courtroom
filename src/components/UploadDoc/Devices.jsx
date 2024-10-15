@@ -21,6 +21,7 @@ import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import uploadImage from "../../assets/images/uploading.gif";
 import analyzingImage from "../../assets/images/analyzing.gif";
+import { decryptData, encryptData } from "../../utils/encryption";
 const Devices = ({ uploadedFile, setUploadedFile }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -30,6 +31,8 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
   const multilingualSupport = useSelector(
     (state) => state?.user?.user?.courtroomFeatures?.MultilingualSupport
   );
+
+  const authKey = useSelector((state) => state.user.authKey);
 
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
@@ -49,12 +52,14 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
   const handleSave = async () => {
     // text save logic
 
+    const encryptedText = encryptData(inputText, authKey);
+
     try {
       await axios.post(
         `${NODE_API_ENDPOINT}/specificLawyerCourtroom/edit_case`,
         {
           // user_id: currentUser.userId,
-          case_overview: inputText,
+          case_overview: encryptedText,
         },
         {
           headers: {
@@ -144,8 +149,15 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
           );
 
           // Handle response and update state
-          setPreviewContent(response.data.data.case_overview.case_overview);
-          setInputText(response.data.data.case_overview.case_overview);
+          // console.log(response.data.data.case_overview.case_overview);
+          // console.log(authKey);
+          const decryptedText = decryptData(
+            response.data.data.case_overview.case_overview,
+            authKey
+          );
+          console.log(decryptedText);
+          setPreviewContent(decryptedText);
+          setInputText(decryptedText);
           setUploading(false);
           setAnalyzing(true);
 

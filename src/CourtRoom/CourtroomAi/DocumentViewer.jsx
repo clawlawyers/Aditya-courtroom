@@ -12,9 +12,11 @@ import { removeCaseLaws, retrieveCaseLaws } from "../../features/laws/lawSlice";
 import { Link } from "react-router-dom";
 import { Close } from "@mui/icons-material";
 import loader from "../../assets/images/argumentLoading.gif";
+import { decryptData, encryptData } from "../../utils/encryption";
 
 const DocumentViewer = ({ text }) => {
   const currentUser = useSelector((state) => state.user.user);
+  const authKey = useSelector((state) => state.user.authKey);
 
   const [showRelevantCaseJudge, setRelevantCaseJudge] = useState(false);
   const [relevantCases, setRelevantCases] = useState("");
@@ -67,7 +69,7 @@ const DocumentViewer = ({ text }) => {
       const res = await axios.post(
         `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_cases_judge_lawyer`,
         {
-          text_input: text,
+          text_input: encryptData(text, authKey),
         },
         {
           headers: {
@@ -76,8 +78,12 @@ const DocumentViewer = ({ text }) => {
         }
       );
       // console.log(res);
-      setRelevantCasesData(res.data.data.relevantCases.relevant_case_law);
-      var data = res.data.data.relevantCases.relevant_case_law;
+      const decryptedData = decryptData(
+        res.data.data.relevantCases.relevant_case_law,
+        authKey
+      );
+      setRelevantCasesData(decryptedData);
+      var data = decryptedData;
       console.log(data);
       data = data.replace(/\\n/g, "<br/>");
       data = data.replace(/\\n\\n/g, "<br/><br/>");

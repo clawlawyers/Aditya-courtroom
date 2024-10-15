@@ -1,9 +1,10 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
+import { decryptData } from "../../utils/encryption";
 
 export const retrieveDrafterQuestions = createAsyncThunk(
   "drafts/retrieveDrafter",
-  async ({ query, token }) => {
+  async ({ query, token, key }) => {
     try {
       const props = await fetch(
         `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/application`,
@@ -19,7 +20,7 @@ export const retrieveDrafterQuestions = createAsyncThunk(
       const parsedProps = await props.json();
       console.log(parsedProps);
       return {
-        drafterDoc: parsedProps.data.application.application,
+        drafterDoc: decryptData(parsedProps.data.application.application, key),
       };
     } catch (error) {
       console.log(error);
