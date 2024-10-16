@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { useSelector } from "react-redux";
 import evidenceLoad from "../../assets/images/evidenceLoad.gif";
-import { decryptData } from "../../utils/encryption";
+import { decryptData, encryptData } from "../../utils/encryption";
 
 const EvidenceDialog = ({ handleEvidenceClose }) => {
   const [evidence, setEvidence] = useState("");
@@ -28,7 +28,7 @@ const EvidenceDialog = ({ handleEvidenceClose }) => {
   const handleSubmit = async () => {
     setLoading(true);
     // Handle the submission of evidence and uploaded files
-    console.log("Evidence:", evidence);
+    // console.log("Evidence:", evidence);
     // console.log("Uploaded Files:", uploadedFiles);
     try {
       const fetchData = await fetch(
@@ -39,7 +39,10 @@ const EvidenceDialog = ({ handleEvidenceClose }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${currentUser.token}`,
           },
-          body: JSON.stringify({ action: "Generate", evidence_text: evidence }),
+          body: JSON.stringify({
+            action: "Generate",
+            evidence_text: encryptData(evidence, authKey),
+          }),
         }
       );
 

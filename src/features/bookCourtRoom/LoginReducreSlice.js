@@ -41,6 +41,7 @@ const userSlice = createSlice({
     user: "",
     caseOverview: "NA",
     firstDraft: "",
+    firstDraftLoading: false,
     fightingSideModal: false,
     authKey: "",
   },
@@ -66,6 +67,9 @@ const userSlice = createSlice({
     setFirstDraftAction(state, action) {
       state.firstDraft = action.payload.draft;
     },
+    setFirstDraftLoading(state, action) {
+      state.firstDraftLoading = !state.firstDraftLoading;
+    },
     setAuthKey(state, action) {
       state.authKey = action.payload.key;
     },
@@ -89,6 +93,7 @@ export const {
   setFightingSideModal,
   setFirstDraftAction,
   setAuthKey,
+  setFirstDraftLoading,
 } = userSlice.actions;
 
 // Export the reducer to be used in the store

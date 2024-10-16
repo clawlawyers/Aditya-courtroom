@@ -13,6 +13,7 @@ import { Popover } from "@mui/material";
 import {
   logout,
   setFirstDraftAction,
+  setFirstDraftLoading,
   setOverview,
 } from "../../features/bookCourtRoom/LoginReducreSlice";
 import aiAssistant from "../../assets/images/aiAssistant.png";
@@ -246,11 +247,14 @@ const AiSidebar = () => {
     (state) => state?.user?.user?.courtroomFeatures?.Evidences
   );
   const firstDraftDetails = useSelector((state) => state.user.firstDraft);
+  const firstDraftLoading = useSelector(
+    (state) => state.user.firstDraftLoading
+  );
   const authKey = useSelector((state) => state.user.authKey);
 
   const [editDialog, setEditDialog] = useState(false);
   const [firstDraftDialog, setFirstDraftDialog] = useState(false);
-  const [firstDraftLoading, setFirsDraftLoading] = useState(false);
+  // const [firstDraftLoading, setFirsDraftLoading] = useState(false);
   const [text, setText] = useState("");
   const [aiIconHover, setAiIconHover] = useState(false);
   const [showAssistant, setShowAssistant] = useState(false);
@@ -267,6 +271,8 @@ const AiSidebar = () => {
   const [relevantLawsArr, setRelevantLawsArr] = useState(null);
   const [relevantLawData, setRelevantLawData] = useState("");
   const [evidenceAccessHover, setEvidenceAccessHover] = useState(false);
+  const [appealDialog, setAppealDialog] = useState(false);
+  const [appealData, setAppealData] = useState("");
 
   const scrollRef = useRef(null);
 
@@ -427,9 +433,9 @@ const AiSidebar = () => {
   };
 
   const handleFirstDraft = async () => {
-    if (isApi) {
-      setFirsDraftLoading(true);
-    }
+    // if (isApi) {
+    //   setFirsDraftLoading(true);
+    // }
 
     setFirstDraftDialog(true);
   };
@@ -446,46 +452,42 @@ const AiSidebar = () => {
   // }
 
   useEffect(() => {
-    if (overViewDetails !== "") {
-      setisApi(true);
-      const firstDraftApi = async () => {
-        try {
-          const response = await axios.post(
-            `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/draft`,
-            {
-              // user_id: currentUser.userId,
+    const firstDraftApi = async () => {
+      dispatch(setFirstDraftLoading());
+      try {
+        const response = await axios.post(
+          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/draft`,
+          {
+            // user_id: currentUser.userId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.token}`,
             },
-            {
-              headers: {
-                Authorization: `Bearer ${currentUser.token}`,
-              },
-            }
-          );
-          // setFirstDraft(response.data.data.draft.detailed_draft);
-          const decryptedData = decryptData(
-            response?.data?.data?.draft?.detailed_draft,
-            authKey
-          );
-          dispatch(
-            setFirstDraftAction({
-              draft: decryptedData,
-            })
-          );
-        } catch (error) {
-          if (
-            error.response.data.error.explanation === "Please refresh the page"
-          ) {
-            toast.error("Please refresh the page");
-            return;
           }
-          toast.error("Error in getting first draft");
-        } finally {
-          setFirsDraftLoading(false);
-          setisApi(false);
+        );
+        const decryptedData = decryptData(
+          response?.data?.data?.draft?.detailed_draft,
+          authKey
+        );
+        dispatch(
+          setFirstDraftAction({
+            draft: decryptedData,
+          })
+        );
+        dispatch(setFirstDraftLoading());
+      } catch (error) {
+        if (
+          error.response.data.error.explanation === "Please refresh the page"
+        ) {
+          toast.error("Please refresh the page");
+          return;
         }
-      };
-      firstDraftApi();
-    }
+        toast.error("Error in getting first draft");
+        dispatch(setFirstDraftLoading());
+      }
+    };
+    firstDraftApi();
   }, [overViewDetails]);
 
   useEffect(() => {
@@ -564,7 +566,7 @@ const AiSidebar = () => {
     if (currentUser.userId) {
       getOverview();
 
-      console.log(currentUser.userId);
+      // console.log(currentUser.userId);
     }
   }, [currentUser.userId]);
 
@@ -794,6 +796,8 @@ const AiSidebar = () => {
       // console.log(data);
       setNextAppealLoading(false);
       toast.success("Next appeal successfull");
+      setAppealDialog(true);
+      setAppealData(data.data.fetchedDraftNextAppeal.detailed_draft);
     } catch (error) {
       console.log(error);
       setNextAppealLoading(false);
@@ -952,14 +956,20 @@ const AiSidebar = () => {
         <div className="flex-1 overflow-auto border-2 border-black rounded flex flex-col relative px-4 py-4 gap-2 justify-between">
           <div className="">
             <motion.div
+              onClick={firstDraftAccess ? handleFirstDraft : null}
+              onHoverStart={() =>
+                !firstDraftAccess ? setDraftAccessHover(true) : ""
+              }
+              onHoverEnd={() =>
+                !firstDraftAccess ? setDraftAccessHover(false) : ""
+              }
+              whileTap={{ scale: "0.95" }}
+              whileHover={{ scale: "1.01" }}
               className={`${
                 overViewDetails === "NA" || overViewDetails === ""
                   ? "opacity-75 pointer-events-none cursor-not-allowed"
                   : ""
               }`}
-              onClick={() => downloadSessionCaseHistory()}
-              whileTap={{ scale: "0.95" }}
-              whileHover={{ scale: "1.01" }}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -970,11 +980,10 @@ const AiSidebar = () => {
                 border: "2px solid white",
                 borderRadius: "5px",
                 marginBottom: "5px",
-                cursor: `${downloadSessionLoading ? "wait" : "pointer"}`,
               }}
             >
               <div>
-                <p className="text-xs m-0">Download Session History</p>
+                <p className="text-xs m-0">View First Draft</p>
               </div>
               <div style={{ width: "15px", margin: "0" }}>
                 <svg
@@ -988,14 +997,16 @@ const AiSidebar = () => {
                   <path d="M14 4h-13v18h20v-11h1v12h-22v-20h14v1zm10 5h-1v-6.293l-11.646 11.647-.708-.708 11.647-11.646h-6.293v-1h8v8z" />
                 </svg>
               </div>
+              {draftAccessHover ? (
+                <h1 className="z-30 absolute text-xs right-7 -top-12 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                  To Enable It : Contact Sales
+                </h1>
+              ) : (
+                ""
+              )}
             </motion.div>
             <motion.div
-              className={`${
-                overViewDetails === "NA" || overViewDetails === ""
-                  ? "opacity-75 pointer-events-none cursor-not-allowed"
-                  : ""
-              }`}
-              onClick={() => downloadCaseHistory()}
+              onClick={() => setShowDrafterQuestions(true)}
               whileTap={{ scale: "0.95" }}
               whileHover={{ scale: "1.01" }}
               style={{
@@ -1007,12 +1018,12 @@ const AiSidebar = () => {
                 color: "#008080",
                 border: "2px solid white",
                 borderRadius: "5px",
-                cursor: `${downloadCaseLoading ? "wait" : "pointer"}`,
+                cursor: "pointer",
                 marginBottom: "5px",
               }}
             >
               <div>
-                <p className="text-xs m-0">Download Case History</p>
+                <p className="text-xs m-0">Ai Drafter</p>
               </div>
               <div style={{ width: "15px", margin: "0" }}>
                 <svg
@@ -1110,7 +1121,12 @@ const AiSidebar = () => {
           {aiAssistantAccess ? (
             <div className="flex justify-end cursor-pointer relative">
               <motion.img
-                className="h-9 w-9"
+                className={`${
+                  overViewDetails === "NA" || overViewDetails === ""
+                    ? "opacity-75 pointer-events-none cursor-not-allowed h-9 w-9"
+                    : "h-9 w-9"
+                }`}
+                // className="h-9 w-9"
                 whileTap={{ scale: "0.95" }}
                 alt="assistant"
                 src={showAssistant ? assistantIcon2 : aiAssistant}
@@ -1132,7 +1148,12 @@ const AiSidebar = () => {
           ) : (
             <div className="flex justify-end cursor-pointer relative">
               <motion.img
-                className="h-3 w-3"
+                className={`${
+                  overViewDetails === "NA" || overViewDetails === ""
+                    ? "opacity-75 pointer-events-none cursor-not-allowed h-3 w-3"
+                    : "h-3 w-3"
+                }`}
+                // className="h-3 w-3"
                 whileTap={{ scale: "0.95" }}
                 alt="assistant"
                 src={aiAssistant}
@@ -1161,36 +1182,20 @@ const AiSidebar = () => {
             </div>
             <div className="h-full flex flex-col justify-evenly">
               <motion.div
-                onClick={() => setShowDrafterQuestions(true)}
-                whileTap={{ scale: "0.95" }}
-                whileHover={{ scale: "1.01" }}
-                className="px-1 flex items-center gap-[12px] cursor-pointer relative"
-              >
-                <img className="w-4" src={aiDrafter} alt="aiDrafter" />
-
-                <p className="m-0 text-xs text-white">Ai Drafter</p>
-              </motion.div>
-              <motion.div
-                onClick={firstDraftAccess ? handleFirstDraft : null}
-                onHoverStart={() =>
-                  !firstDraftAccess ? setDraftAccessHover(true) : ""
-                }
-                onHoverEnd={() =>
-                  !firstDraftAccess ? setDraftAccessHover(false) : ""
-                }
-                whileTap={{ scale: "0.95" }}
-                whileHover={{ scale: "1.01" }}
                 className={`${
                   overViewDetails === "NA" || overViewDetails === ""
                     ? "opacity-75 pointer-events-none cursor-not-allowed"
                     : ""
                 }`}
+                onClick={() => downloadSessionCaseHistory()}
+                whileTap={{ scale: "0.95" }}
+                whileHover={{ scale: "1.01" }}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  cursor: "pointer",
                   position: "relative",
+                  cursor: `${downloadSessionLoading ? "wait" : "pointer"}`,
                 }}
               >
                 <img
@@ -1198,15 +1203,24 @@ const AiSidebar = () => {
                   src={firstDraftLogo}
                   alt="firstdraft"
                 />
-                <p className="m-0 text-xs text-white">View first Draft</p>
-                {draftAccessHover ? (
-                  <h1 className="z-30 absolute text-xs right-7 -top-12 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
-                    To Enable It : Contact Sales
-                  </h1>
-                ) : (
-                  ""
-                )}
+                <p className="m-0 text-xs text-white">
+                  Download Session History
+                </p>
               </motion.div>
+              <motion.div
+                className={`${
+                  overViewDetails === "NA" || overViewDetails === ""
+                    ? "opacity-75 pointer-events-none cursor-not-allowed px-1 flex items-center gap-[12px] relative"
+                    : "px-1 flex items-center gap-[12px] cursor-pointer relative"
+                }`}
+                onClick={() => downloadCaseHistory()}
+                whileTap={{ scale: "0.95" }}
+                whileHover={{ scale: "1.01" }}
+              >
+                <img className="w-4" src={aiDrafter} alt="aiDrafter" />
+                <p className="m-0 text-xs text-white">Download Case History</p>
+              </motion.div>
+
               <motion.div
                 className={`${
                   overViewDetails === "NA" || overViewDetails === ""
@@ -1965,6 +1979,42 @@ const AiSidebar = () => {
               )}
             </>
           </main>
+        </div>
+      )}
+      {appealDialog && (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            backgroundColor: "rgba(0, 0, 0, 0.1)",
+            backdropFilter: "blur(3px)",
+            left: "0",
+            right: "0",
+            top: "0",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: "10",
+          }}
+        >
+          <div className="w-1/2 h-[90%] overflow-auto bg-white text-black p-3 rounded">
+            <div className="flex justify-between">
+              <p className="text-xl font-semibold">Next Appeal</p>
+              <Close
+                className="cursor-pointer"
+                onClick={() => {
+                  setAppealDialog(false);
+                  setAppealData("");
+                }}
+              />
+            </div>
+            <div>
+              <p>
+                <Markdown>{appealData}</Markdown>
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </>
