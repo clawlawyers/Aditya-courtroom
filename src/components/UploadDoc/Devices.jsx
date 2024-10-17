@@ -73,6 +73,17 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
       setAnalyzing(false);
       setUploadComplete(false);
       setPreviewContent("");
+      await axios.post(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/case_summary`,
+        {
+          // user_id: currentUser.userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        }
+      );
     } catch (error) {
       console.log(error);
       if (error.response.data.error.explanation === "Please refresh the page") {

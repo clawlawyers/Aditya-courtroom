@@ -559,7 +559,7 @@ const CourtroomArgument = () => {
   };
 
   const firstDraftApi = async () => {
-    dispatch(setFirstDraftLoading());
+    // dispatch(setFirstDraftLoading());
     try {
       const response = await axios.post(
         `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/draft`,
@@ -580,10 +580,10 @@ const CourtroomArgument = () => {
         authKey
       );
       dispatch(setFirstDraftAction({ draft: decryptedData }));
-      dispatch(setFirstDraftLoading());
+      // dispatch(setFirstDraftLoading());
     } catch (error) {
       toast.error("Error in getting first draft");
-      dispatch(setFirstDraftLoading());
+      // dispatch(setFirstDraftLoading());
     }
   };
 

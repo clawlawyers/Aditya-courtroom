@@ -189,6 +189,7 @@ const AiSidebar = () => {
   const [caseSearchPrompt, setCaseSearchPrompt] = useState("");
   const [caseSearchLoading, setCaseSearchLoading] = useState(false);
   const [nextAppealLoading, setNextAppealLoading] = useState(false);
+  const [draftLoading, setDraftLoading] = useState(false);
 
   const charsPerPage = 1000; // Define this value outside the function
 
@@ -382,6 +383,8 @@ const AiSidebar = () => {
   const saveHistory = async () => {
     setRelevantLawsArr(null);
     setShowRelevantLaws(false);
+    dispatch(setOverview(""));
+    dispatch(setFirstDraftAction({ draft: "" }));
     try {
       if (overViewDetails !== "NA") {
         await axios.post(
@@ -422,6 +425,17 @@ const AiSidebar = () => {
       );
       dispatch(setOverview(text));
       setEditDialog(false);
+      await axios.post(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/case_summary`,
+        {
+          // user_id: currentUser.userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        }
+      );
     } catch (error) {
       if (error.response.data.error.explanation === "Please refresh the page") {
         toast.error("Please refresh the page");
@@ -451,43 +465,43 @@ const AiSidebar = () => {
   //   return div.innerHTML;
   // }
 
-  useEffect(() => {
-    const firstDraftApi = async () => {
-      dispatch(setFirstDraftLoading());
-      try {
-        const response = await axios.post(
-          `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/draft`,
-          {
-            // user_id: currentUser.userId,
+  const firstDraftApi = async () => {
+    // dispatch(setFirstDraftLoading());
+    try {
+      const response = await axios.post(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/draft`,
+        {
+          // user_id: currentUser.userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${currentUser.token}`,
-            },
-          }
-        );
-        const decryptedData = decryptData(
-          response?.data?.data?.draft?.detailed_draft,
-          authKey
-        );
-        dispatch(
-          setFirstDraftAction({
-            draft: decryptedData,
-          })
-        );
-        dispatch(setFirstDraftLoading());
-      } catch (error) {
-        if (
-          error.response.data.error.explanation === "Please refresh the page"
-        ) {
-          toast.error("Please refresh the page");
-          return;
         }
-        toast.error("Error in getting first draft");
-        dispatch(setFirstDraftLoading());
+      );
+      const decryptedData = decryptData(
+        response?.data?.data?.draft?.detailed_draft,
+        authKey
+      );
+      dispatch(
+        setFirstDraftAction({
+          draft: decryptedData,
+        })
+      );
+      // dispatch(setFirstDraftLoading());
+    } catch (error) {
+      if (error.response.data.error.explanation === "Please refresh the page") {
+        toast.error("Please refresh the page");
+        return;
       }
-    };
-    firstDraftApi();
+      toast.error("Error in getting first draft");
+      // dispatch(setFirstDraftLoading());
+    }
+  };
+  useEffect(() => {
+    if (overViewDetails !== "") {
+      firstDraftApi();
+    }
   }, [overViewDetails]);
 
   useEffect(() => {
@@ -1308,7 +1322,7 @@ const AiSidebar = () => {
             overflow: "auto",
           }}
         >
-          {firstDraftLoading ? (
+          {/* {firstDraftLoading ? (
             <div
               className="border-2 border-white rounded-lg w-1/6 h-fit p-2 flex flex-row justify-center items-center"
               style={{
@@ -1317,39 +1331,40 @@ const AiSidebar = () => {
             >
               <img className="h-40 w-40 my-10" src={loader} alt="loader" />
             </div>
-          ) : (
-            <div
-              className="h-fit w-2/3 rounded-md border-2 border-white"
-              style={{
-                background: "linear-gradient(to right,#0e1118,#008080)",
-              }}
-            >
-              <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <svg
-                  onClick={() => {
-                    setFirstDraftDialog(false);
-                  }}
-                  style={{ margin: "20px", cursor: "pointer" }}
-                  width="30"
-                  height="30"
-                  fill="white"
-                  stroke="white"
-                  clip-rule="evenodd"
-                  fill-rule="evenodd"
-                  stroke-linejoin="round"
-                  stroke-miterlimit="2"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="m12.002 2.005c5.518 0 9.998 4.48 9.998 9.997 0 5.518-4.48 9.998-9.998 9.998-5.517 0-9.997-4.48-9.997-9.998 0-5.517 4.48-9.997 9.997-9.997zm0 1.5c-4.69 0-8.497 3.807-8.497 8.497s3.807 8.498 8.497 8.498 8.498-3.808 8.498-8.498-3.808-8.497-8.498-8.497zm0 7.425 2.717-2.718c.146-.146.339-.219.531-.219.404 0 .75.325.75.75 0 .193-.073.384-.219.531l-2.717 2.717 2.727 2.728c.147.147.22.339.22.531 0 .427-.349.75-.75.75-.192 0-.384-.073-.53-.219l-2.729-2.728-2.728 2.728c-.146.146-.338.219-.53.219-.401 0-.751-.323-.751-.75 0-.192.073-.384.22-.531l2.728-2.728-2.722-2.722c-.146-.147-.219-.338-.219-.531 0-.425.346-.749.75-.749.192 0 .385.073.531.219z"
-                    fill-rule="nonzero"
-                  />
-                </svg>
-              </div>
-              <div className="m-0 h-2/3 flex flex-column justify-center items-center">
-                <div className="flex h-full px-5 pb-3 flex-row justify-between items-center w-full gap-5">
-                  <div className="flex h-full  flex-col gap-2 justify-center w-full items-center">
+          ) : ( */}
+          <div
+            className="h-fit w-2/3 rounded-md border-2 border-white"
+            style={{
+              background: "linear-gradient(to right,#0e1118,#008080)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <svg
+                onClick={() => {
+                  setFirstDraftDialog(false);
+                }}
+                style={{ margin: "20px", cursor: "pointer" }}
+                width="30"
+                height="30"
+                fill="white"
+                stroke="white"
+                clip-rule="evenodd"
+                fill-rule="evenodd"
+                stroke-linejoin="round"
+                stroke-miterlimit="2"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m12.002 2.005c5.518 0 9.998 4.48 9.998 9.997 0 5.518-4.48 9.998-9.998 9.998-5.517 0-9.997-4.48-9.997-9.998 0-5.517 4.48-9.997 9.997-9.997zm0 1.5c-4.69 0-8.497 3.807-8.497 8.497s3.807 8.498 8.497 8.498 8.498-3.808 8.498-8.498-3.808-8.497-8.498-8.497zm0 7.425 2.717-2.718c.146-.146.339-.219.531-.219.404 0 .75.325.75.75 0 .193-.073.384-.219.531l-2.717 2.717 2.727 2.728c.147.147.22.339.22.531 0 .427-.349.75-.75.75-.192 0-.384-.073-.53-.219l-2.729-2.728-2.728 2.728c-.146.146-.338.219-.53.219-.401 0-.751-.323-.751-.75 0-.192.073-.384.22-.531l2.728-2.728-2.722-2.722c-.146-.147-.219-.338-.219-.531 0-.425.346-.749.75-.749.192 0 .385.073.531.219z"
+                  fill-rule="nonzero"
+                />
+              </svg>
+            </div>
+            <div className="m-0 h-2/3 flex flex-column justify-center items-center">
+              <div className="flex h-full px-5 pb-3 flex-row justify-between items-center w-full gap-5">
+                <div className="flex h-full  flex-col gap-2 justify-center w-full items-center">
+                  {firstDraftDetails !== "" ? (
                     <div className="flex flex-col w-full rounded-md bg-white text-black h-[75vh] overflow-y-auto">
                       <div className="w-full px-2 h-fit my-2 items-center flex flex-row ">
                         <p className="uppercase font-bold my-2 w-full ">
@@ -1372,118 +1387,127 @@ const AiSidebar = () => {
                         onChange={(e) => setFirstDraft(e.target.value)}
                       />
                     </div>
-                    <div className="w-full flex justify-end">
-                      <button
-                        onClick={handleNextAppeal}
-                        className="px-4 py-1 rounded border"
-                      >
-                        {nextAppealLoading ? (
-                          <CircularProgress size={15} color="inherit" />
-                        ) : (
-                          "Next Appeal"
-                        )}
-                      </button>
+                  ) : (
+                    <div className="flex flex-col w-full justify-center items-center rounded-md bg-white text-black h-[75vh] overflow-y-auto">
+                      <img
+                        className="h-40 w-40 my-10"
+                        src={loader}
+                        alt="loader"
+                      />
                     </div>
+                  )}
+                  <div className="w-full flex justify-end">
+                    <button
+                      onClick={handleNextAppeal}
+                      className="px-4 py-1 rounded border"
+                    >
+                      {nextAppealLoading ? (
+                        <CircularProgress size={15} color="inherit" />
+                      ) : (
+                        "Next Appeal"
+                      )}
+                    </button>
                   </div>
-                  <div className="h-[75vh] w-1 bg-neutral-200/40" />
-                  <div className="flex flex-col justify-between h-full w-full gap-4 ">
-                    {showRelevantLaws ? (
-                      <div className="overflow-auto border-2 border-white rounded bg-white text-black p-2">
-                        {relevantCaseLoading ? (
-                          <div className="flex justify-center items-center">
-                            <img
-                              className="h-40 w-40 my-10"
-                              src={loader}
-                              alt="loader"
-                            />
-                          </div>
-                        ) : (
-                          <p
-                            className="h-[55vh]"
-                            dangerouslySetInnerHTML={{
-                              __html: relevantLawsArr,
-                            }}
+                </div>
+                <div className="h-[75vh] w-1 bg-neutral-200/40" />
+                <div className="flex flex-col justify-between h-full w-full gap-4 ">
+                  {showRelevantLaws ? (
+                    <div className="overflow-auto border-2 border-white rounded bg-white text-black p-2">
+                      {relevantCaseLoading ? (
+                        <div className="flex justify-center items-center">
+                          <img
+                            className="h-40 w-40 my-10"
+                            src={loader}
+                            alt="loader"
                           />
-                          // {relevantLawsArr}</p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col w-full gap-2">
-                        <img className="" src={logo} alt="logo" />
-                        <h3 className=" text-center">Draft Preview</h3>
-                      </div>
-                    )}
-                    {showRelevantLaws && !relevantCaseLoading && (
-                      <div className="w-full flex justify-end">
-                        <Link to={"/courtroom-ai/caseLaws"}>
-                          <button
-                            onClick={() => {
-                              dispatch(removeCaseLaws());
-                              dispatch(
-                                retrieveCaseLaws({
-                                  query: relevantLawData,
-                                  token: currentUser.token,
-                                })
-                              );
-                              setFirstDraftDialog(false);
-                            }}
-                            className="bg-[#003131] px-4 py-1 text-sm rounded text-white"
-                          >
-                            View Case Laws
-                          </button>
-                        </Link>
-                      </div>
-                    )}
-                    <div className="grid grid-cols-2 gap-2 relative">
-                      {showRelevantLaws ? (
-                        <motion.button
-                          disabled={!relevantLawsArr}
-                          className="border border-white rounded-md py-1"
-                          onClick={() => setShowRelevantLaws(false)}
-                        >
-                          Go Back
-                        </motion.button>
+                        </div>
                       ) : (
-                        <motion.button
-                          disabled={!relevantCaseLawsAccess}
-                          onClick={() => {
-                            setShowRelevantLaws(true);
-                            getReventCaseLaw();
+                        <p
+                          className="h-[55vh]"
+                          dangerouslySetInnerHTML={{
+                            __html: relevantLawsArr,
                           }}
-                          className="border border-white rounded-md py-1"
-                          onHoverStart={() =>
-                            !relevantCaseLawsAccess
-                              ? setRelevantCaseAccessHover(true)
-                              : ""
-                          }
-                          onHoverEnd={() =>
-                            !relevantCaseLawsAccess
-                              ? setRelevantCaseAccessHover(false)
-                              : ""
-                          }
-                        >
-                          Relevant Case Laws
-                        </motion.button>
-                      )}
-                      <button
-                        onClick={() => dowloadFirstDraft()}
-                        className="border border-white rounded-md py-1"
-                      >
-                        <Download /> Download
-                      </button>
-                      {relevantCaseAccessHover ? (
-                        <h1 className="z-30 absolute text-xs left-7 -top-9 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
-                          To Enable It : Contact Sales
-                        </h1>
-                      ) : (
-                        ""
+                        />
+                        // {relevantLawsArr}</p>
                       )}
                     </div>
+                  ) : (
+                    <div className="flex flex-col w-full gap-2">
+                      <img className="" src={logo} alt="logo" />
+                      <h3 className=" text-center">Draft Preview</h3>
+                    </div>
+                  )}
+                  {showRelevantLaws && !relevantCaseLoading && (
+                    <div className="w-full flex justify-end">
+                      <Link to={"/courtroom-ai/caseLaws"}>
+                        <button
+                          onClick={() => {
+                            dispatch(removeCaseLaws());
+                            dispatch(
+                              retrieveCaseLaws({
+                                query: relevantLawData,
+                                token: currentUser.token,
+                              })
+                            );
+                            setFirstDraftDialog(false);
+                          }}
+                          className="bg-[#003131] px-4 py-1 text-sm rounded text-white"
+                        >
+                          View Case Laws
+                        </button>
+                      </Link>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-2 relative">
+                    {showRelevantLaws ? (
+                      <motion.button
+                        disabled={!relevantLawsArr}
+                        className="border border-white rounded-md py-1"
+                        onClick={() => setShowRelevantLaws(false)}
+                      >
+                        Go Back
+                      </motion.button>
+                    ) : (
+                      <motion.button
+                        disabled={!relevantCaseLawsAccess}
+                        onClick={() => {
+                          setShowRelevantLaws(true);
+                          getReventCaseLaw();
+                        }}
+                        className="border border-white rounded-md py-1"
+                        onHoverStart={() =>
+                          !relevantCaseLawsAccess
+                            ? setRelevantCaseAccessHover(true)
+                            : ""
+                        }
+                        onHoverEnd={() =>
+                          !relevantCaseLawsAccess
+                            ? setRelevantCaseAccessHover(false)
+                            : ""
+                        }
+                      >
+                        Relevant Case Laws
+                      </motion.button>
+                    )}
+                    <button
+                      onClick={() => dowloadFirstDraft()}
+                      className="border border-white rounded-md py-1"
+                    >
+                      <Download /> Download
+                    </button>
+                    {relevantCaseAccessHover ? (
+                      <h1 className="z-30 absolute text-xs left-7 -top-9 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                        To Enable It : Contact Sales
+                      </h1>
+                    ) : (
+                      ""
+                    )}
                   </div>
                 </div>
               </div>
             </div>
-          )}
+          </div>
+          {/* )} */}
         </div>
       ) : null}
       {editDialog ? (
