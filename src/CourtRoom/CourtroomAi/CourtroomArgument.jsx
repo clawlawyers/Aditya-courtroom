@@ -95,7 +95,8 @@ const CourtroomArgument = () => {
     setAnchorElObjection(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleClose = (e) => {
+    e.stopPropagation();
     setAnchorElObjection(null);
   };
 

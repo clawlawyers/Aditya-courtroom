@@ -436,6 +436,7 @@ const AiSidebar = () => {
           },
         }
       );
+      dispatch(setFirstDraftAction({ draft: "" }));
     } catch (error) {
       if (error.response.data.error.explanation === "Please refresh the page") {
         toast.error("Please refresh the page");
@@ -499,7 +500,7 @@ const AiSidebar = () => {
     }
   };
   useEffect(() => {
-    if (overViewDetails !== "") {
+    if (overViewDetails !== "" || overViewDetails !== "NA") {
       firstDraftApi();
     }
   }, [overViewDetails]);
@@ -1364,7 +1365,7 @@ const AiSidebar = () => {
             <div className="m-0 h-2/3 flex flex-column justify-center items-center">
               <div className="flex h-full px-5 pb-3 flex-row justify-between items-center w-full gap-5">
                 <div className="flex h-full  flex-col gap-2 justify-center w-full items-center">
-                  {firstDraftDetails !== "" ? (
+                  {firstDraft !== "" ? (
                     <div className="flex flex-col w-full rounded-md bg-white text-black h-[75vh] overflow-y-auto">
                       <div className="w-full px-2 h-fit my-2 items-center flex flex-row ">
                         <p className="uppercase font-bold my-2 w-full ">
