@@ -31,6 +31,8 @@ import AllowedBooking from "./CourtRoom/admin/AllowedBooking.jsx";
 import AllowedLogin from "./CourtRoom/admin/AllowedLogin.jsx";
 import AiDrafter from "./CourtRoom/CourtroomAi/AiDrafter.jsx";
 import CaseLaws from "./CourtRoom/CourtroomAi/CaseLaws.jsx";
+import AiDrafterPro from "./CourtRoom/CourtroomAi/AiDrafterPro.jsx";
+import RelevantCaseLaws from "./CourtRoom/CourtroomAi/RelevantCaseLaws.jsx";
 
 function App() {
   const BATCH_INTERVAL = 60 * 1000;
@@ -164,8 +166,16 @@ function App() {
           element: <AiDrafter />,
         },
         {
+          path: "/courtroom-ai/aiDraftPro",
+          element: <AiDrafterPro />,
+        },
+        {
           path: "/courtroom-ai/caseLaws",
           element: <CaseLaws />,
+        },
+        {
+          path: "/courtroom-ai/relevantCaseLaws",
+          element: <RelevantCaseLaws />,
         },
       ],
     },

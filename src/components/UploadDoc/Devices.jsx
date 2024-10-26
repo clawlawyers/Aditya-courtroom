@@ -42,6 +42,8 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
   const [closed, setClosed] = useState(false);
   const [files, setFile] = useState(null);
   const [inputText, setInputText] = useState("");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadUrl, setUploadUrl] = useState(""); // Store resumable upload URL
   // console.log(inputText);
 
   const handleChange = (e) => {
@@ -109,6 +111,32 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
     }
   };
 
+  const uploadFileWithProgress = async (url) => {
+    const xhr = new XMLHttpRequest();
+
+    // Track upload progress with the XMLHttpRequest
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const progress = Math.round((event.loaded * 100) / event.total);
+        setUploadProgress(progress);
+      }
+    };
+
+    xhr.open("PUT", url, true);
+    xhr.setRequestHeader("Content-Type", files.type);
+
+    // Send the file
+    xhr.send(files);
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        console.log("File uploaded successfully!");
+      } else {
+        console.error("Error uploading file:", xhr.responseText);
+      }
+    };
+  };
+
   const handleUploadFromComputer = async () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
@@ -116,6 +144,7 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
     fileInput.multiple = true; // Allow multiple file selection
     fileInput.addEventListener("change", async (event) => {
       const files = Array.from(event.target.files);
+      setFile(event.target.files[0]);
       if (files.length > 0) {
         const maxFileSize = 15 * 1024 * 1024; // 15 MB in bytes
         const validFiles = [];

@@ -41,12 +41,18 @@ import {
 } from "../../features/laws/drafterSlice";
 import {
   removeCaseLaws,
+  removeRelevantCaseLaws,
   retrieveCaseLaws,
   setCaseLaws,
+  setRelevantCaseLaws,
 } from "../../features/laws/lawSlice";
 import evidenceLoad from "../../assets/images/evidenceLoad.gif";
 import { decryptData, encryptData } from "../../utils/encryption";
 import sendIcon from "../../assets/icons/Send.png";
+import {
+  removeDrafterPro,
+  retrieveDrafterProQuestions,
+} from "../../features/laws/drafterProSlice";
 
 const drafterQuestions = [
   { name: "Bail Application", value: "bail_application" },
@@ -291,9 +297,16 @@ const AiSidebar = () => {
 
   const formatText = (text) => {
     return text
-      .replace(/\\n\\n/g, "<br/><br/>")
-      .replace(/\\n/g, "  <br/>")
-      .replace(/\\/g, " ");
+      .replaceAll("\\\\n\\\\n", "<br/>")
+      .replaceAll("\\\\n", "<br/>")
+      .replaceAll("\\n\\n", "<br/>")
+      .replaceAll("\\n", "<br/>")
+      .replaceAll("\n", "<br/>")
+      .replaceAll(/\*([^*]+)\*/g, "<strong>$1</strong>")
+      .replaceAll("\\", "")
+      .replaceAll('"', "")
+      .replaceAll(":", " :")
+      .replaceAll("#", "");
   };
 
   const getReventCaseLaw = async () => {
@@ -301,7 +314,7 @@ const AiSidebar = () => {
 
     try {
       const fetchedData = await fetch(
-        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_case_law`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_case_law_updated`,
         {
           method: "POST",
         }
@@ -319,11 +332,14 @@ const AiSidebar = () => {
       }
 
       const data = await fetchedData.json();
-      const decryptedData = decryptData(
-        data.data.relevantCases.relevant_case_law,
-        authKey
+      // const decryptedData = decryptData(
+      //   data.data.relevantCases.relevant_case_law,
+      //   authKey
+      // );
+      const decryptedData = data.data.relevantCases.metadata;
+      const formattedData = formatText(
+        decryptData(data.data.relevantCases.relevant_case_law, authKey)
       );
-      const formattedData = formatText(decryptedData);
       setRelevantLawData(decryptedData);
       // console.log(decryptedData);
       setRelevantCaseLoading(false);
@@ -759,6 +775,18 @@ const AiSidebar = () => {
     setShowDrafterQuestions(false);
     dispatch(
       retrieveDrafterQuestions({
+        query: action,
+        token: currentUser.token,
+        key: authKey,
+      })
+    );
+  };
+
+  const handleDrafterProQuestions = (action) => {
+    dispatch(removeDrafterPro());
+    setShowDrafterQuestions(false);
+    dispatch(
+      retrieveDrafterProQuestions({
         query: action,
         token: currentUser.token,
         key: authKey,
@@ -1440,14 +1468,13 @@ const AiSidebar = () => {
                   )}
                   {showRelevantLaws && !relevantCaseLoading && (
                     <div className="w-full flex justify-end">
-                      <Link to={"/courtroom-ai/caseLaws"}>
+                      <Link to={"/courtroom-ai/relevantCaseLaws"}>
                         <button
                           onClick={() => {
-                            dispatch(removeCaseLaws());
+                            dispatch(removeRelevantCaseLaws());
                             dispatch(
-                              retrieveCaseLaws({
-                                query: relevantLawData,
-                                token: currentUser.token,
+                              setRelevantCaseLaws({
+                                relevantLawData,
                               })
                             );
                             setFirstDraftDialog(false);
@@ -1894,8 +1921,6 @@ const AiSidebar = () => {
             left: "0",
             right: "0",
             top: "0",
-            // backgroundColor: "rgba(0, 0, 0, 0.1)",
-            // backdropFilter: "blur(3px)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -1931,7 +1956,15 @@ const AiSidebar = () => {
                         onClick={() => handleDrafterQuestions(x.value)}
                         className="py-2 px-4 bg-[#008080] rounded-md text-sm text-white"
                       >
-                        Create
+                        Normal
+                      </button>
+                    </Link>
+                    <Link to={"/courtroom-ai/aiDraftPro"}>
+                      <button
+                        onClick={() => handleDrafterProQuestions(x.value)}
+                        className="py-2 px-4 bg-[#008080] rounded-md text-sm text-white"
+                      >
+                        Pro
                       </button>
                     </Link>
                   </div>
