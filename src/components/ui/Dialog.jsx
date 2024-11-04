@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight } from "@mui/icons-material";
+import { ArrowLeft, ArrowRight, Close } from "@mui/icons-material";
 import logo from "../../assets/icons/clawlogo.png";
 import { Button } from "@mui/material";
 import axios from "axios";
@@ -9,6 +9,8 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 // Adjust the import path accordingly
 import { setOverview } from "../../features/bookCourtRoom/LoginReducreSlice";
+
+import clawLogo from "../../assets/icons/clawlogo1.png";
 
 const Dialog = ({
   open,
@@ -23,6 +25,7 @@ const Dialog = ({
   currentUser,
   NODE_API_ENDPOINT,
 }) => {
+  console.log(image);
   const [currentPage, setCurrentPage] = useState(0);
   const [pages, setPages] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
@@ -50,7 +53,8 @@ const Dialog = ({
   useEffect(() => {
     const newPages = getPages(inputText);
     setPages(newPages);
-    setCurrentText(newPages[currentPage] || "");
+    // setCurrentText(newPages[currentPage] || "");
+    setCurrentText(inputText);
   }, [inputText]);
 
   // Update inputText when pages change
@@ -94,13 +98,10 @@ const Dialog = ({
   const handleSave = async () => {
     try {
       setUploading(true);
-      await axios.post(
-        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/edit_case`,
-        {
-          user_id: currentUser.userId,
-          case_overview: inputText,
-        }
-      );
+      await axios.post(`${NODE_API_ENDPOINT}/courtroom/edit_case`, {
+        user_id: currentUser.userId,
+        case_overview: inputText,
+      });
       dispatch(setOverview(inputText));
       setUploading(false);
       setAnalyzing(false);
@@ -108,10 +109,6 @@ const Dialog = ({
       setPreviewContent("");
       navigate("/courtroom-ai/");
     } catch (error) {
-      if (error.response.data.error.explanation === "Please refresh the page") {
-        toast.error("Please refresh the page");
-        return;
-      }
       toast.error("Failed to save case overview");
       setUploading(false);
     }
@@ -134,13 +131,13 @@ const Dialog = ({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 w-full flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+    <div className="h-screen fixed inset-0 w-full flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
       <div
-        ref={dialogRef}
-        className="bg-gradient-to-r from-[#0e1118] scale-90 to-[#008080] w-auto border border-white rounded-md p-2 relative"
+        // ref={dialogRef}
+        className="bg-gradient-to-r from-[#0e1118] to-[#008080] w-auto border border-white rounded-md p-4 relative"
       >
         {/* Close Button */}
-        <div className="absolute top-2 right-2">
+        {/* <div className="absolute top-2 right-2">
           <svg
             onClick={onClose}
             className="cursor-pointer"
@@ -159,30 +156,33 @@ const Dialog = ({
               d="M6 18L18 6M6 6l12 12"
             ></path>
           </svg>
-        </div>
+        </div> */}
 
         {/* Dialog Content */}
-        <div className="text-center w-full">
-          <h1 className="text-2xl text-white font-bold">{title}</h1>
+        <div className="w-full  flex flex-col">
+          <div className="w-full flex justify-between items-center gap-10 px-2">
+            <h1 className="text-2xl text-white font-bold">{title}</h1>
+            <Close className="cursor-pointer" onClick={onClose} />
+          </div>
           {text && (
-            <div className="flex justify-between items-center w-full gap-5">
-              <div className="flex flex-row justify-center w-full items-center">
-                <button
-                  onClick={handlePrevious}
-                  className="p-2 mx-2 bg-white text-black rounded-full"
-                  style={{
-                    visibility: currentPage === 0 ? "hidden" : "visible",
-                  }}
-                  disabled={currentPage === 0}
-                >
-                  <ArrowLeft />
-                </button>
+            <div className=" flex justify-between items-center h-[80vh] w-full gap-5">
+              <div className="flex flex-row justify-center w-full h-full items-center">
+                {/* <button
+                    onClick={handlePrevious}
+                    className="p-2 mx-2 bg-white text-black rounded-full"
+                    style={{
+                      visibility: currentPage === 0 ? "hidden" : "visible",
+                    }}
+                    disabled={currentPage === 0}
+                  >
+                    <ArrowLeft />
+                  </button> */}
                 <div
                   className={`${
                     isEditing ? "border-4  border-teal-400" : "border-none"
-                  } rounded-md delay-150 flex flex-col w-[30rem] bg-white text-black h-[75vh] overflow-y-auto`}
+                  } rounded-md delay-150 flex flex-col w-[30rem] bg-white text-black h-full overflow-y-auto`}
                 >
-                  <div className="w-full px-2 h-fit my-2 items-center flex flex-row ">
+                  <div className="w-full  px-2 my-2 items-center flex flex-row ">
                     <p className="uppercase font-bold my-2 w-full ">
                       Document Preview
                     </p>
@@ -203,39 +203,38 @@ const Dialog = ({
                     onChange={handleTextChange}
                     readOnly={!isEditing}
                   />
-                  <div className="text-right p-1 mx-2 font-semibold">
-                    Page {currentPage + 1}
-                  </div>
+                  {/* <div className="text-right p-1 mx-2 font-semibold">
+                      Page {currentPage + 1}
+                    </div> */}
                 </div>
-                <button
-                  onClick={handleNext}
-                  className={`p-2 mx-2 bg-white text-black rounded-full`}
-                  style={{
-                    visibility:
-                      currentPage === pages.length - 1 ? "hidden" : "visible",
-                  }}
-                  disabled={currentPage === pages.length - 1}
-                >
-                  <ArrowRight />
-                </button>
+                {/* <button
+                    onClick={handleNext}
+                    className={`p-2 mx-2 bg-white text-black rounded-full`}
+                    style={{
+                      visibility:
+                        currentPage === pages.length - 1 ? "hidden" : "visible",
+                    }}
+                    disabled={currentPage === pages.length - 1}
+                  >
+                    <ArrowRight />
+                  </button> */}
               </div>
-              <div className="h-[80vh] w-1 bg-neutral-200/40" />
-              {/* <div className="h-[80vh] w-1 bg-neutral-200/40" /> */}
+              <div className="h-full w-1 bg-neutral-200/40" />
               <div className="flex flex-col w-full">
-                <div className="w-full h-fit flex flex-row justify-center items-center">
-                  <img src={logo} className="h-72 w-72" alt="logo" />
+                <div className="flex flex-row justify-center items-center">
+                  <img src={clawLogo} className="h-auto w-auto" alt="logo" />
                 </div>
-                <div className="flex flex-col w-full justify-center items-center space-y-4">
-                  <div className="flex flex-row justify-between space-x-2">
+                <div className="flex flex-col w-full justify-center items-center gap-2">
+                  <div className="w-full flex flex-row justify-between gap-2">
                     <Button
-                      className="lowercase border-2 text-sm border-white text-white"
+                      className="w-full  lowercase border-2 text-sm border-white text-white"
                       variant="outlined"
                       onClick={onClose} // Modify if needed
                     >
                       Upload a Document
                     </Button>
                     <Button
-                      className="text-white text-sm border-2 border-white"
+                      className="text-white text-sm border-2 border-white w-full "
                       variant="outlined"
                       onClick={handleEditToggle}
                     >
@@ -254,9 +253,17 @@ const Dialog = ({
             </div>
           )}
           {image && (
-            <div className="flex flex-row w-full h-max justify-center items-center align-middle">
-              <img className="max-content" src={image} alt="" />
-            </div>
+            <>
+              {image === "/static/media/analyzing.e4732f49b92ee72868c4.gif" ? (
+                <div className="flex flex-row w-full justify-center items-center align-middle">
+                  <img className="h-72 w-auto" src={image} alt="" />
+                </div>
+              ) : (
+                <div className="flex flex-row w-full justify-center items-center align-middle">
+                  <img className="h-40" src={image} alt="" />
+                </div>
+              )}
+            </>
           )}
         </div>
 

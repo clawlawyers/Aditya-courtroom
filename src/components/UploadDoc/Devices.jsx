@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Drive from "../../assets/icons/drive.svg";
 import DropBox from "../../assets/icons/dropbox.svg";
 import pc from "../../assets/icons/local.svg";
@@ -26,6 +26,8 @@ import toast from "react-hot-toast";
 import uploadImage from "../../assets/images/uploading.gif";
 import analyzingImage from "../../assets/images/analyzing.gif";
 import { decryptData, encryptData } from "../../utils/encryption";
+import "./Devices.css";
+
 const Devices = ({ uploadedFile, setUploadedFile }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -46,6 +48,9 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
   const [closed, setClosed] = useState(false);
   const [files, setFile] = useState(null);
   const [inputText, setInputText] = useState("");
+  const [toBeUploadedFiles, setToBeUploadedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadedSuccessFully, setUploadedSuccessFully] = useState([]);
   const [open, setOpen] = useState(false);
   const [content, setconetnt] = useState("");
   const style = {
@@ -135,10 +140,11 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
   const handleUploadFromComputer = async () => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
-    fileInput.accept = ".pdf,.doc,.docx,.txt,.jpg"; // Specify the accepted file types
+    fileInput.accept = ".pdf,.docx,.txt"; // Specify the accepted file types
     fileInput.multiple = true; // Allow multiple file selection
     fileInput.addEventListener("change", async (event) => {
       const files = Array.from(event.target.files);
+      setFile(event.target.files[0]);
       if (files.length > 0) {
         const maxFileSize = 15 * 1024 * 1024; // 15 MB in bytes
         const validFiles = [];
@@ -155,24 +161,66 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
 
         if (validFiles.length === 0) {
           return; // No valid files, exit the function
+        } else {
+          setToBeUploadedFiles(validFiles);
         }
-        setUploading(true);
+        // setUploading(true);
 
-        const formData = new FormData();
-        // files.forEach((file, index) => {
-        //   if (index === 0) {
-        //     formData.append(`file`, file); // Append all files under the same key
-        //   } else {
-        //     formData.append(`file${index}`, file); // Append all files under the same key
-        //   }
+        // const formData = new FormData();
+        // validFiles.forEach((file, index) => {
+        //   formData.append(`file${index === 0 ? "" : index}`, file); // Append files under the same key
         // });
-        validFiles.forEach((file, index) => {
-          formData.append(`file${index === 0 ? "" : index}`, file); // Append files under the same key
-        });
-        formData.append("isMultilang", multilingualSupport);
+        // formData.append("isMultilang", multilingualSupport);
+        // try {
+        //   const response = await axios.post(
+        //     `${NODE_API_ENDPOINT}/specificLawyerCourtroom/newcase`,
+        //     formData,
+        //     {
+        //       headers: {
+        //         "Content-Type": "multipart/form-data",
+        //         Authorization: `Bearer ${currentUser.token}`,
+        //       },
+        //     }
+        //   );
+        //   const decryptedText = decryptData(
+        //     response.data.data.case_overview.case_overview,
+        //     authKey
+        //   );
+        //   console.log(decryptedText);
+        //   setPreviewContent(decryptedText);
+        //   setInputText(decryptedText);
+        //   setUploading(false);
+        //   setAnalyzing(true);
+
+        //   setTimeout(() => {
+        //     setAnalyzing(false);
+        //     setUploadComplete(true);
+        //   }, 3000);
+        // } catch (error) {
+        //   if (
+        //     error.response.data.error.explanation === "Please refresh the page"
+        //   ) {
+        //     toast.error("Please refresh the page");
+        //     return;
+        //   }
+        //   console.log(error);
+        //   toast.error("Error uploading file");
+        // }
+      }
+    });
+    fileInput.click();
+  };
+
+  useEffect(() => {
+    const uploadFiles = async () => {
+      for (const file of toBeUploadedFiles) {
         try {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("isMultilang", true);
+
           const response = await axios.post(
-            `${NODE_API_ENDPOINT}/specificLawyerCourtroom/newcase`,
+            `${NODE_API_ENDPOINT}/specificLawyerCourtroom/fileUpload`,
             formData,
             {
               headers: {
@@ -181,37 +229,101 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
               },
             }
           );
-
-          // Handle response and update state
-          // console.log(response.data.data.case_overview.case_overview);
-          // console.log(authKey);
-          const decryptedText = decryptData(
-            response.data.data.case_overview.case_overview,
-            authKey
+          // console.log(response.data);
+          uploadFileWithProgress(
+            response.data.data.uploadUrl,
+            file,
+            response.data.data.fileName
           );
-          console.log(decryptedText);
-          setPreviewContent(decryptedText);
-          setInputText(decryptedText);
-          setUploading(false);
-          setAnalyzing(true);
-
-          setTimeout(() => {
-            setAnalyzing(false);
-            setUploadComplete(true);
-          }, 3000);
         } catch (error) {
-          if (
-            error.response.data.error.explanation === "Please refresh the page"
-          ) {
-            toast.error("Please refresh the page");
-            return;
-          }
-          console.log(error);
-          toast.error("Error uploading file");
+          console.error(`Error uploading ${file.name}:`, error);
         }
       }
-    });
-    fileInput.click();
+    };
+
+    if (toBeUploadedFiles.length > 0) {
+      uploadFiles();
+    }
+  }, [toBeUploadedFiles]);
+
+  const uploadFileWithProgress = async (url, file, fileId) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const progress = Math.round((event.loaded * 100) / event.total);
+        setUploadProgress((prevProgress) => ({
+          ...prevProgress,
+          [fileId]: progress,
+        }));
+      }
+    };
+
+    xhr.open("PUT", url, true);
+    xhr.setRequestHeader("Content-Type", file.type);
+
+    // Send the file
+    xhr.send(file);
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        console.log("File uploaded successfully!");
+        setUploadProgress((prevProgress) => {
+          const newProgress = { ...prevProgress };
+          delete newProgress[fileId];
+          return newProgress;
+        });
+        // setUploadedSuccessFully([...uploadedSuccessFully, fileId]);
+        setUploadedSuccessFully((prevSuccessfullyUploaded) => [
+          ...prevSuccessfullyUploaded,
+          fileId,
+        ]);
+      } else {
+        console.error("Error uploading file:", xhr.responseText);
+      }
+    };
+  };
+
+  useEffect(() => {
+    if (
+      uploadedSuccessFully.length > 0 &&
+      toBeUploadedFiles.length === uploadedSuccessFully.length
+    ) {
+      console.log("here");
+      callOverView();
+    }
+  }, [uploadedSuccessFully]);
+
+  const callOverView = async () => {
+    setAnalyzing(true);
+    try {
+      const response = await axios.post(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/getoverview-formfilename`,
+        {
+          // user_id: currentUser.userId,
+          fileNameArray: uploadedSuccessFully,
+          isMultilang: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        }
+      );
+      toast.success("Overview fetched successfully!");
+      console.log(response.data);
+      setPreviewContent(response.data.data.case_overview);
+      setInputText(response.data.data.case_overview);
+      setAnalyzing(false);
+      setUploadComplete(true);
+    } catch (error) {
+      setAnalyzing(false);
+      toast.error("Failed to load case overview");
+    } finally {
+      setToBeUploadedFiles([]);
+      setUploadProgress({});
+      setUploadedSuccessFully([]);
+    }
   };
 
   const handleUploadFromDrive = () => {
@@ -360,25 +472,23 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
       </section>
       <Dialog
         setOnChange={handleChange}
-        open={uploading || analyzing || uploadComplete}
+        open={analyzing || uploadComplete}
         onClose={handleDialogClose}
         title={
-          uploading
-            ? "Uploading Your Document"
-            : analyzing
+          analyzing
             ? "Analyzing the Document"
             : uploadComplete
             ? "Upload Complete"
             : ""
         }
-        text={uploading || analyzing ? "" : previewContent}
+        text={analyzing ? "" : previewContent}
         inputText={inputText}
         setInputText={setInputText}
         buttonText={`${uploadComplete ? "" : ""}`}
         onButtonClick={handleSave}
-        image={uploading ? uploadImage : analyzing ? analyzingImage : ""}
+        image={analyzing ? analyzingImage : ""}
       >
-        {uploading && (
+        {/* {uploading && (
           <img className="h-20 w-20" src={uploadImage} alt="uploading" />
         )}
         {analyzing && (
@@ -390,8 +500,23 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
             value={caseOverview}
             onChange={handleChange}
           />
-        )}
+        )} */}
       </Dialog>
+      <div className="absolute right-5 bottom-10 h-screen overflow-auto flex flex-col-reverse gap-2">
+        {Object.entries(uploadProgress).map(([fileId, progress], index) => (
+          <div className="w-60 bg-white text-black rounded-lg p-2" key={fileId}>
+            <p className="m-0 text-xs text-[#008080]">
+              Uploading File : {index + 1}
+            </p>
+            <div className="flex gap-2 items-center">
+              <progress value={progress} style={{ color: "blue" }} max="100">
+                {progress}%
+              </progress>
+              <p className="m-0 text-[#008080]">{progress}%</p>
+            </div>
+          </div>
+        ))}
+      </div>
     </motion.div>
       <Modal
       open={open}

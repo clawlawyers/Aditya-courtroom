@@ -4,13 +4,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import loader from "../../assets/images/evidenceLoad.gif";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
-import { editDrafter, removeDrafter } from "../../features/laws/drafterSlice";
 import Markdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
+import {
+  editDrafterPro,
+  removeDrafterPro,
+} from "../../features/laws/drafterProSlice";
 import { decryptData } from "../../utils/encryption";
 
-const AiDrafter = () => {
-  const drafterDoc = useSelector((state) => state.drafter.drafterDoc);
+const AiDrafterPro = () => {
+  const drafterDoc = useSelector((state) => state.drafterPro.drafterDoc);
   const currentUser = useSelector((state) => state.user.user);
   const authKey = useSelector((state) => state.user.authKey);
 
@@ -27,11 +30,11 @@ const AiDrafter = () => {
   };
 
   const handleEditDoc = async () => {
-    dispatch(removeDrafter());
+    dispatch(removeDrafterPro());
     setEditLoading(true);
     try {
       const props = await fetch(
-        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/edit_application`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/edit_pro_application`,
         {
           method: "POST",
           headers: {
@@ -43,11 +46,8 @@ const AiDrafter = () => {
       );
       const parsedProps = await props.json();
       dispatch(
-        editDrafter({
-          drafterDoc: decryptData(
-            parsedProps.data.editApplication.application,
-            authKey
-          ),
+        editDrafterPro({
+          drafterDoc: parsedProps.data.editProApplication.application,
         })
       );
       setPromptTextbox(false);
@@ -202,4 +202,4 @@ const AiDrafter = () => {
   );
 };
 
-export default AiDrafter;
+export default AiDrafterPro;

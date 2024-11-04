@@ -19,7 +19,12 @@ import { IconButton, Menu } from "@mui/material";
 import { Close, MoreVert } from "@mui/icons-material";
 import expand from "../../assets/images/expand.png";
 import collapse from "../../assets/images/collapse.png";
-import { removeCaseLaws, retrieveCaseLaws } from "../../features/laws/lawSlice";
+import {
+  removeCaseLaws,
+  removeRelevantCaseLaws,
+  retrieveCaseLaws,
+  setRelevantCaseLaws,
+} from "../../features/laws/lawSlice";
 import {
   setFightingSideModal,
   setFirstDraftAction,
@@ -85,7 +90,7 @@ const CourtroomArgument = () => {
   const [showRelevantCaseJudge, setRelevantCaseJudge] = useState(false);
   const [loadingRelevantCases, setLoadingRelevantCases] = useState(false);
   const [relevantCases, setRelevantCases] = useState("");
-  const [relevantCasesData, setRelevantCasesData] = useState("");
+  const [relevantLawData, setRelevantLawData] = useState([]);
   const [judgeViewExpand, setJudgeViewExpand] = useState(false);
   const [lawyerViewExpand, setLawyerViewExpand] = useState(false);
   const [fightType, setFightType] = useState("");
@@ -95,7 +100,8 @@ const CourtroomArgument = () => {
     setAnchorElObjection(event.currentTarget);
   };
 
-  const handleClose = () => {
+  const handleClose = (e) => {
+    e.stopPropagation();
     setAnchorElObjection(null);
   };
 
@@ -499,7 +505,7 @@ const CourtroomArgument = () => {
     const encryptedData = encryptData(data, authKey);
     try {
       const res = await axios.post(
-        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_cases_judge_lawyer`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_cases_judge_lawyer_updated`,
         {
           text_input: encryptedData,
         },
@@ -514,12 +520,18 @@ const CourtroomArgument = () => {
         res.data.data.relevantCases.relevant_case_law,
         authKey
       );
-      setRelevantCasesData(decryptedData);
-      var data = decryptedData;
-      console.log(data);
-      data = data.replace(/\\n/g, "<br/>");
-      data = data.replace(/\\n\\n/g, "<br/><br/>");
-      data = data.replace(/\\/g, " ");
+      setRelevantLawData(res.data.data.relevantCases.metadata);
+      var data = decryptedData
+        .replaceAll("\\\\n\\\\n", "<br/>")
+        .replaceAll("\\\\n", "<br/>")
+        .replaceAll("\\n\\n", "<br/>")
+        .replaceAll("\\n", "<br/>")
+        .replaceAll("\n", "<br/>")
+        .replaceAll(/\*([^*]+)\*/g, "<strong>$1</strong>")
+        .replaceAll("\\", "")
+        .replaceAll('"', "")
+        .replaceAll(":", " :")
+        .replaceAll("#", "");
       setRelevantCases(data);
       setLoadingRelevantCases(false);
     } catch (error) {}
@@ -1131,16 +1143,11 @@ const CourtroomArgument = () => {
             </div>
             {!loadingRelevantCases && (
               <div className="flex justify-end">
-                <Link to={"/courtroom-ai/caseLaws"}>
+                <Link to={"/courtroom-ai/relevantCaseLaws"}>
                   <button
                     onClick={() => {
-                      dispatch(removeCaseLaws());
-                      dispatch(
-                        retrieveCaseLaws({
-                          query: relevantCasesData,
-                          token: currentUser.token,
-                        })
-                      );
+                      dispatch(removeRelevantCaseLaws());
+                      dispatch(setRelevantCaseLaws({ relevantLawData }));
                     }}
                     className="bg-[#003131] px-4 py-1 text-sm rounded text-white"
                   >

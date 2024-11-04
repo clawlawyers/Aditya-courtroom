@@ -41,12 +41,19 @@ import {
 } from "../../features/laws/drafterSlice";
 import {
   removeCaseLaws,
+  removeRelevantCaseLaws,
   retrieveCaseLaws,
   setCaseLaws,
+  setRelevantCaseLaws,
 } from "../../features/laws/lawSlice";
 import evidenceLoad from "../../assets/images/evidenceLoad.gif";
 import { decryptData, encryptData } from "../../utils/encryption";
 import sendIcon from "../../assets/icons/Send.png";
+import {
+  removeDrafterPro,
+  retrieveDrafterProQuestions,
+} from "../../features/laws/drafterProSlice";
+import clawLogo from "../../assets/icons/clawlogo1.png";
 
 const drafterQuestions = [
   { name: "Bail Application", value: "bail_application" },
@@ -105,11 +112,11 @@ const TimerComponent = React.memo(({ ExitToCourtroom }) => {
   return (
     <>
       <div className="flex justify-between items-center px-2 py-1 bg-[#C5C5C5] text-[#008080] border-2 rounded">
-        <h1 className="text-xs m-0">Total Time:</h1>
+        <h1 className="text-xs m-0 font-bold text-teal-800">Total Time:</h1>
         <h1 className="text-xs m-0 font-semibold">{totalHours} hr</h1>
       </div>
       <div className="flex justify-between items-center px-2 py-1 bg-[#C5C5C5] text-[#008080] border-2 rounded">
-        <h1 className="text-xs m-0">Time Used Up:</h1>
+        <h1 className="text-xs m-0 font-bold text-teal-800">Time Used Up:</h1>
         <h1 className="text-xs m-0 font-semibold">
           {/* {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
           {timeLeft.seconds < 10 ? `0${timeLeft.seconds}` : timeLeft.seconds} */}
@@ -293,9 +300,16 @@ const AiSidebar = () => {
 
   const formatText = (text) => {
     return text
-      .replace(/\\n\\n/g, "<br/><br/>")
-      .replace(/\\n/g, "  <br/>")
-      .replace(/\\/g, " ");
+      .replaceAll("\\\\n\\\\n", "<br/>")
+      .replaceAll("\\\\n", "<br/>")
+      .replaceAll("\\n\\n", "<br/>")
+      .replaceAll("\\n", "<br/>")
+      .replaceAll("\n", "<br/>")
+      .replaceAll(/\*([^*]+)\*/g, "<strong>$1</strong>")
+      .replaceAll("\\", "")
+      .replaceAll('"', "")
+      .replaceAll(":", " :")
+      .replaceAll("#", "");
   };
 
   const getReventCaseLaw = async () => {
@@ -303,7 +317,7 @@ const AiSidebar = () => {
 
     try {
       const fetchedData = await fetch(
-        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_case_law`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/relevant_case_law_updated`,
         {
           method: "POST",
         }
@@ -321,11 +335,14 @@ const AiSidebar = () => {
       }
 
       const data = await fetchedData.json();
-      const decryptedData = decryptData(
-        data.data.relevantCases.relevant_case_law,
-        authKey
+      // const decryptedData = decryptData(
+      //   data.data.relevantCases.relevant_case_law,
+      //   authKey
+      // );
+      const decryptedData = data.data.relevantCases.metadata;
+      const formattedData = formatText(
+        decryptData(data.data.relevantCases.relevant_case_law, authKey)
       );
-      const formattedData = formatText(decryptedData);
       setRelevantLawData(decryptedData);
       // console.log(decryptedData);
       setRelevantCaseLoading(false);
@@ -385,8 +402,6 @@ const AiSidebar = () => {
   const saveHistory = async () => {
     setRelevantLawsArr(null);
     setShowRelevantLaws(false);
-    dispatch(setOverview(""));
-    dispatch(setFirstDraftAction({ draft: "" }));
     try {
       if (overViewDetails !== "NA") {
         await axios.post(
@@ -438,6 +453,7 @@ const AiSidebar = () => {
           },
         }
       );
+      dispatch(setFirstDraftAction({ draft: "" }));
     } catch (error) {
       if (error.response.data.error.explanation === "Please refresh the page") {
         toast.error("Please refresh the page");
@@ -501,7 +517,7 @@ const AiSidebar = () => {
     }
   };
   useEffect(() => {
-    if (overViewDetails !== "") {
+    if (overViewDetails !== "" || overViewDetails !== "NA") {
       firstDraftApi();
     }
   }, [overViewDetails]);
@@ -561,6 +577,7 @@ const AiSidebar = () => {
         // console.log(overView.data.data.case_overview);
         if (overView.data.data.case_overview === "NA") {
           dispatch(setOverview(""));
+          dispatch(setFirstDraftAction({ draft: "" }));
         } else {
           const decryptedData = decryptData(
             overView.data.data.case_overview,
@@ -767,6 +784,18 @@ const AiSidebar = () => {
     );
   };
 
+  const handleDrafterProQuestions = (action) => {
+    dispatch(removeDrafterPro());
+    setShowDrafterQuestions(false);
+    dispatch(
+      retrieveDrafterProQuestions({
+        query: action,
+        token: currentUser.token,
+        key: authKey,
+      })
+    );
+  };
+
   const handleCaseSearchPrompt = async () => {
     setCaseSearchLoading(true);
     try {
@@ -909,6 +938,9 @@ const AiSidebar = () => {
                       onClose={handleMenuClose}
                     >
                       <MenuItem
+                        disabled={
+                          overViewDetails === "NA" || overViewDetails === ""
+                        }
                         onClick={() => {
                           handleMenuClose();
                           setEditDialog(true);
@@ -1008,7 +1040,7 @@ const AiSidebar = () => {
               className={`${
                 overViewDetails === "NA" || overViewDetails === ""
                   ? "opacity-75 pointer-events-none cursor-not-allowed"
-                  : ""
+                  : "cursor-pointer"
               }`}
               style={{
                 display: "flex",
@@ -1023,7 +1055,12 @@ const AiSidebar = () => {
               }}
             >
               <div>
-                <p className="text-xs m-0">View First Draft</p>
+                <p
+                  className=" text-xs m-0 font-bold text-teal-800"
+                  style={{ textDecoration: "none" }}
+                >
+                  View First Draft
+                </p>
               </div>
               <div style={{ width: "15px", margin: "0" }}>
                 <svg
@@ -1063,7 +1100,9 @@ const AiSidebar = () => {
               }}
             >
               <div>
-                <p className="text-xs m-0">Ai Drafter</p>
+                <p className="text-xs m-0 font-bold text-teal-800">
+                  Ai Drafter
+                </p>
               </div>
               <div style={{ width: "15px", margin: "0" }}>
                 <svg
@@ -1104,7 +1143,9 @@ const AiSidebar = () => {
               }}
             >
               <div>
-                <p className="text-xs m-0">Ask LegalGPT</p>
+                <p className="text-xs m-0 font-bold text-teal-800">
+                  Ask LegalGPT
+                </p>
               </div>
               <div style={{ width: "15px", margin: "0" }}>
                 <svg
@@ -1139,10 +1180,13 @@ const AiSidebar = () => {
                 color: "#008080",
                 border: "2px solid white",
                 borderRadius: "5px",
+                cursor: "pointer",
               }}
             >
               <div>
-                <p className="text-xs m-0">Case Search</p>
+                <p className="text-xs m-0 font-bold text-teal-800">
+                  Case Search
+                </p>
               </div>
               <div style={{ width: "15px", margin: "0" }}>
                 <svg
@@ -1250,8 +1294,8 @@ const AiSidebar = () => {
               <motion.div
                 className={`${
                   overViewDetails === "NA" || overViewDetails === ""
-                    ? "opacity-75 pointer-events-none cursor-not-allowed px-1 flex items-center gap-[12px] relative"
-                    : "px-1 flex items-center gap-[12px] cursor-pointer relative"
+                    ? "opacity-75 pointer-events-none cursor-not-allowed  flex items-center gap-[12px] relative"
+                    : " flex items-center gap-[12px] cursor-pointer relative"
                 }`}
                 onClick={() => downloadCaseHistory()}
                 whileTap={{ scale: "0.95" }}
@@ -1261,7 +1305,7 @@ const AiSidebar = () => {
                 <p className="m-0 text-xs text-white">Download Case History</p>
               </motion.div>
 
-              <motion.div
+              {/* <motion.div
                 className={`${
                   overViewDetails === "NA" || overViewDetails === ""
                     ? "opacity-75 pointer-events-none cursor-not-allowed"
@@ -1278,7 +1322,7 @@ const AiSidebar = () => {
               >
                 <img src={oldCaseLogo} />
                 <p className="m-0 text-xs text-white">Old Case Search</p>
-              </motion.div>
+              </motion.div> */}
               <Link to={"/courtroom-ai"}>
                 <motion.div
                   whileTap={{ scale: "0.95" }}
@@ -1293,7 +1337,11 @@ const AiSidebar = () => {
                   <img src={newCaseLogo} />
                   <p
                     className="m-0 text-xs text-white"
-                    onClick={() => saveHistory()}
+                    onClick={() => {
+                      saveHistory();
+                      dispatch(setOverview(""));
+                      dispatch(setFirstDraftAction({ draft: "" }));
+                    }}
                   >
                     New Case Input
                   </p>
@@ -1348,50 +1396,25 @@ const AiSidebar = () => {
             overflow: "auto",
           }}
         >
-          {/* {firstDraftLoading ? (
-            <div
-              className="border-2 border-white rounded-lg w-1/6 h-fit p-2 flex flex-row justify-center items-center"
-              style={{
-                background: "linear-gradient(to right,#0e1118,#008080)",
-              }}
-            >
-              <img className="h-40 w-40 my-10" src={loader} alt="loader" />
-            </div>
-          ) : ( */}
           <div
-            className="h-fit w-2/3 rounded-md border-2 border-white"
+            className="h-[95%] w-2/3 flex flex-col rounded-md border-2 border-white"
             style={{
               background: "linear-gradient(to right,#0e1118,#008080)",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <svg
+            <div className="flex justify-end p-2">
+              <Close
+                className="cursor-pointer"
                 onClick={() => {
                   setFirstDraftDialog(false);
                 }}
-                style={{ margin: "20px", cursor: "pointer" }}
-                width="30"
-                height="30"
-                fill="white"
-                stroke="white"
-                clip-rule="evenodd"
-                fill-rule="evenodd"
-                stroke-linejoin="round"
-                stroke-miterlimit="2"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="m12.002 2.005c5.518 0 9.998 4.48 9.998 9.997 0 5.518-4.48 9.998-9.998 9.998-5.517 0-9.997-4.48-9.997-9.998 0-5.517 4.48-9.997 9.997-9.997zm0 1.5c-4.69 0-8.497 3.807-8.497 8.497s3.807 8.498 8.497 8.498 8.498-3.808 8.498-8.498-3.808-8.497-8.498-8.497zm0 7.425 2.717-2.718c.146-.146.339-.219.531-.219.404 0 .75.325.75.75 0 .193-.073.384-.219.531l-2.717 2.717 2.727 2.728c.147.147.22.339.22.531 0 .427-.349.75-.75.75-.192 0-.384-.073-.53-.219l-2.729-2.728-2.728 2.728c-.146.146-.338.219-.53.219-.401 0-.751-.323-.751-.75 0-.192.073-.384.22-.531l2.728-2.728-2.722-2.722c-.146-.147-.219-.338-.219-.531 0-.425.346-.749.75-.749.192 0 .385.073.531.219z"
-                  fill-rule="nonzero"
-                />
-              </svg>
+              />
             </div>
-            <div className="m-0 h-2/3 flex flex-column justify-center items-center">
-              <div className="flex h-full px-5 pb-3 flex-row justify-between items-center w-full gap-5">
+            <div className="flex-1 m-0 h-[90%] flex flex-column justify-center items-center">
+              <div className="flex h-full px-4 pb-3 flex-row justify-between items-center w-full gap-5">
                 <div className="flex h-full  flex-col gap-2 justify-center w-full items-center">
-                  {firstDraftDetails !== "" ? (
-                    <div className="flex flex-col w-full rounded-md bg-white text-black h-[75vh] overflow-y-auto">
+                  {firstDraft !== "" ? (
+                    <div className="flex flex-col w-full h-full rounded-md bg-white text-black overflow-y-auto">
                       <div className="w-full px-2 h-fit my-2 items-center flex flex-row ">
                         <p className="uppercase font-bold my-2 w-full ">
                           First Draft Preview
@@ -1414,7 +1437,7 @@ const AiSidebar = () => {
                       />
                     </div>
                   ) : (
-                    <div className="flex flex-col w-full justify-center items-center rounded-md bg-white text-black h-[75vh] overflow-y-auto">
+                    <div className="flex flex-col w-full justify-center items-center rounded-md bg-white text-black h-full overflow-y-auto">
                       <img
                         className="h-40 w-40 my-10"
                         src={loader}
@@ -1445,12 +1468,12 @@ const AiSidebar = () => {
                     </button>
                   </div>
                 </div>
-                <div className="h-[75vh] w-1 bg-neutral-200/40" />
-                <div className="flex flex-col justify-between h-full w-full gap-4 ">
+                <div className="h-full w-1 bg-neutral-200/40" />
+                <div className="flex flex-col justify-center h-full w-full gap-4 ">
                   {showRelevantLaws ? (
-                    <div className="overflow-auto border-2 border-white rounded bg-white text-black p-2">
+                    <div className="h-full overflow-auto border-2 border-white rounded bg-white text-black p-2">
                       {relevantCaseLoading ? (
-                        <div className="flex justify-center items-center">
+                        <div className="flex justify-center h-full items-center">
                           <img
                             className="h-40 w-40 my-10"
                             src={loader}
@@ -1459,7 +1482,7 @@ const AiSidebar = () => {
                         </div>
                       ) : (
                         <p
-                          className="h-[55vh]"
+                          className="h-[60vh]"
                           dangerouslySetInnerHTML={{
                             __html: relevantLawsArr,
                           }}
@@ -1469,22 +1492,22 @@ const AiSidebar = () => {
                     </div>
                   ) : (
                     <div className="flex flex-col w-full gap-2">
-                      <img className="" src={logo} alt="logo" />
+                      <img className="" src={clawLogo} alt="logo" />
                       <h3 className=" text-center">Draft Preview</h3>
                     </div>
                   )}
                   {showRelevantLaws && !relevantCaseLoading && (
                     <div className="w-full flex justify-end">
-                      <Link to={"/courtroom-ai/caseLaws"}>
+                      <Link to={"/courtroom-ai/relevantCaseLaws"}>
                         <button
                           onClick={() => {
-                            dispatch(removeCaseLaws());
+                            dispatch(removeRelevantCaseLaws());
                             dispatch(
-                              retrieveCaseLaws({
-                                query: relevantLawData,
-                                token: currentUser.token,
+                              setRelevantCaseLaws({
+                                relevantLawData,
                               })
                             );
+                            // handleRelevantCaseLaws();
                             setFirstDraftDialog(false);
                           }}
                           className="bg-[#003131] px-4 py-1 text-sm rounded text-white"
@@ -1505,22 +1528,11 @@ const AiSidebar = () => {
                       </motion.button>
                     ) : (
                       <motion.button
-                        disabled={!relevantCaseLawsAccess}
                         onClick={() => {
                           setShowRelevantLaws(true);
                           getReventCaseLaw();
                         }}
                         className="border border-white rounded-md py-1"
-                        onHoverStart={() =>
-                          !relevantCaseLawsAccess
-                            ? setRelevantCaseAccessHover(true)
-                            : ""
-                        }
-                        onHoverEnd={() =>
-                          !relevantCaseLawsAccess
-                            ? setRelevantCaseAccessHover(false)
-                            : ""
-                        }
                       >
                         Relevant Case Laws
                       </motion.button>
@@ -1531,13 +1543,6 @@ const AiSidebar = () => {
                     >
                       <Download /> Download
                     </button>
-                    {relevantCaseAccessHover ? (
-                      <h1 className="z-30 absolute text-xs left-7 -top-9 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
-                        To Enable It : Contact Sales
-                      </h1>
-                    ) : (
-                      ""
-                    )}
                   </div>
                 </div>
               </div>
@@ -1562,12 +1567,12 @@ const AiSidebar = () => {
           }}
         >
           <div
-            className="h-fit w-2/3 rounded-md border-2 border-white"
+            className="h-[90%] w-2/3 rounded-md border-2 border-white relative"
             style={{
               background: "linear-gradient(to right,#0e1118,#008080)",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div className="flex justify-end absolute right-0">
               <svg
                 onClick={() => setEditDialog(false)}
                 style={{ margin: "20px", cursor: "pointer" }}
@@ -1589,12 +1594,12 @@ const AiSidebar = () => {
               </svg>
             </div>
             {/* <div className="m-0 flex flex-column justify-center items-center"> */}
-            <div className="grid grid-cols-2  px-5 pb-3 justify-between items-center w-full gap-5">
-              <div className="flex flex-row justify-center w-full items-center">
+            <div className="grid grid-cols-2  px-4 py-3 justify-between items-center w-full h-full gap-5">
+              <div className="flex flex-row justify-center w-full h-full items-center">
                 <div
                   className={`${
                     isEditing ? "border-4  border-teal-400" : "border-none"
-                  } rounded-md delay-150 flex flex-col w-[30rem] bg-white text-black h-[70vh] overflow-y-auto`}
+                  } rounded-md delay-150 flex flex-col w-[30rem] bg-white text-black h-full overflow-y-auto`}
                 >
                   <div className="w-full px-2 h-fit my-2 items-center flex flex-row ">
                     <p className="uppercase font-bold my-2 w-full ">
@@ -1622,7 +1627,7 @@ const AiSidebar = () => {
               {/* <div className="h-5/6 w-1 bg-neutral-200/40" /> */}
               <div className="flex flex-col justify-between py-20  w-full gap-4 ">
                 <div className="flex flex-col w-full gap-4">
-                  <img className="" src={logo} alt="logo" />
+                  <img className="" src={clawLogo} alt="logo" />
                   <h1 className="uppercase text-center font-bold text-4xl">
                     {" "}
                     Edit Your Document
@@ -1631,20 +1636,23 @@ const AiSidebar = () => {
                 <div className="flex flex-col w-full  justify-between">
                   <div className="flex flex-col w-full justify-center items-center gap-4">
                     <div className="flex flex-row justify-center gap-2 w-full">
-                      <Button
-                        className="lowercase border-2 text-sm border-white text-white"
-                        variant="outlined"
-                        onClick={handleSave} // Modify if needed
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        className="text-white text-sm border-2 border-white"
-                        variant="outlined"
-                        onClick={handleEditToggle}
-                      >
-                        {isEditing ? "Save Changes" : "Edit current document"}
-                      </Button>
+                      {isEditing ? (
+                        <Button
+                          className="lowercase border-2 text-sm border-white text-white"
+                          variant="outlined"
+                          onClick={handleSave} // Modify if needed
+                        >
+                          Save Changes
+                        </Button>
+                      ) : (
+                        <Button
+                          className="text-white text-sm border-2 border-white"
+                          variant="outlined"
+                          onClick={handleEditToggle}
+                        >
+                          Edit current document
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1797,7 +1805,16 @@ const AiSidebar = () => {
                   disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
                 >
-                  <img className="w-9 h-9" src={sendIcon} />
+                  {/* <img className="w-9 h-9" src={sendIcon} /> */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="40"
+                    height="30"
+                    viewBox="0 0 24 24"
+                    fill="white"
+                  >
+                    <path d="M22 12l-20 12 5-12-5-12z" />
+                  </svg>
                 </motion.button>
               </form>
             </div>
@@ -1913,7 +1930,16 @@ const AiSidebar = () => {
                   disabled={askLegalGptPrompt === ""}
                   whileTap={{ scale: "0.95" }}
                 >
-                  <img className="w-9 h-9" src={sendIcon} />
+                  {/* <img className="w-9 h-9" src={sendIcon} /> */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="40"
+                    height="30"
+                    viewBox="0 0 24 24"
+                    fill="white"
+                  >
+                    <path d="M22 12l-20 12 5-12-5-12z" />
+                  </svg>
                 </motion.button>
               </form>
             </div>
@@ -1929,8 +1955,6 @@ const AiSidebar = () => {
             left: "0",
             right: "0",
             top: "0",
-            // backgroundColor: "rgba(0, 0, 0, 0.1)",
-            // backdropFilter: "blur(3px)",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
@@ -1966,7 +1990,15 @@ const AiSidebar = () => {
                         onClick={() => handleDrafterQuestions(x.value)}
                         className="py-2 px-4 bg-[#008080] rounded-md text-sm text-white"
                       >
-                        Create
+                        Normal
+                      </button>
+                    </Link>
+                    <Link to={"/courtroom-ai/aiDraftPro"}>
+                      <button
+                        onClick={() => handleDrafterProQuestions(x.value)}
+                        className="py-2 px-4 bg-[#008080] rounded-md text-sm text-white"
+                      >
+                        Pro
                       </button>
                     </Link>
                   </div>
