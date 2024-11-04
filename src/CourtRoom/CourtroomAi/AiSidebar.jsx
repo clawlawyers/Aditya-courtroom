@@ -189,6 +189,9 @@ const AiSidebar = () => {
   const [caseSearchPrompt, setCaseSearchPrompt] = useState("");
   const [caseSearchLoading, setCaseSearchLoading] = useState(false);
   const [nextAppealLoading, setNextAppealLoading] = useState(false);
+  const [reserachArgumentsLoading, setReserachArgumentsLoading] = useState(false);
+  const [appealDialog, setAppealDialog] = useState(false);
+  const [reaseachDialog, setReaseachDialog] = useState(false);
   const [draftLoading, setDraftLoading] = useState(false);
 
   const charsPerPage = 1000; // Define this value outside the function
@@ -272,7 +275,6 @@ const AiSidebar = () => {
   const [relevantLawsArr, setRelevantLawsArr] = useState(null);
   const [relevantLawData, setRelevantLawData] = useState("");
   const [evidenceAccessHover, setEvidenceAccessHover] = useState(false);
-  const [appealDialog, setAppealDialog] = useState(false);
   const [appealData, setAppealData] = useState("");
 
   const scrollRef = useRef(null);
@@ -815,6 +817,30 @@ const AiSidebar = () => {
     } catch (error) {
       console.log(error);
       setNextAppealLoading(false);
+    }
+  };
+  const handleResearchArguments = async () => {
+    setReserachArgumentsLoading(true);
+    try {
+      const response = await fetch(
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/generate_hypo_draft`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${currentUser.token}`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+      setReserachArgumentsLoading(false);
+      toast.success("Research Arguments successfull");
+      setReaseachDialog(true);
+      setAppealData(data.data.fetchedHypoDraft.detailed_draft);
+    } catch (error) {
+      console.log(error);
+      setReserachArgumentsLoading(false);
     }
   };
 
@@ -1396,7 +1422,17 @@ const AiSidebar = () => {
                       />
                     </div>
                   )}
-                  <div className="w-full flex justify-end">
+                  <div className="w-full text-sm gap-3 flex justify-end">
+                    <button
+                      onClick={handleResearchArguments}
+                      className="px-4 py-1 rounded border"
+                    >
+                      {reserachArgumentsLoading ? (
+                        <CircularProgress size={15} color="inherit" />
+                      ) : (
+                        "Research Arguments"
+                      )}
+                    </button>
                     <button
                       onClick={handleNextAppeal}
                       className="px-4 py-1 rounded border"
@@ -2010,7 +2046,7 @@ const AiSidebar = () => {
           </main>
         </div>
       )}
-      {appealDialog && (
+      {(appealDialog || reaseachDialog) && (
         <div
           style={{
             width: "100%",
@@ -2029,11 +2065,18 @@ const AiSidebar = () => {
         >
           <div className="w-1/2 h-[90%] overflow-auto bg-white text-black p-3 rounded">
             <div className="flex justify-between">
-              <p className="text-xl font-semibold">Next Appeal</p>
+              <p className="text-xl font-semibold">{appealDialog?"Next Appeal":"Research Arguments"}</p>
               <Close
                 className="cursor-pointer"
                 onClick={() => {
-                  setAppealDialog(false);
+                  if(reaseachDialog){
+                    setReaseachDialog(false);
+
+                  }
+                  else{
+
+                    setAppealDialog(false);
+                  }
                   setAppealData("");
                 }}
               />

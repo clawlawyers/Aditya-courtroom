@@ -13,6 +13,10 @@ import analyze from "../../assets/icons/Animation - 1721467138603.json";
 import axios from "axios";
 import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { useDispatch } from "react-redux";
+
+import Modal from "@mui/material/Modal";
+import Box from "@mui/material/Box";
+
 import {
   setFightingSideModal,
   setOverview,
@@ -42,7 +46,26 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
   const [closed, setClosed] = useState(false);
   const [files, setFile] = useState(null);
   const [inputText, setInputText] = useState("");
+  const [open, setOpen] = useState(false);
+  const [content, setconetnt] = useState("");
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+    height: "90%",
+    width: "50%",
+  };
+ 
   // console.log(inputText);
+
+
+  
 
   const handleChange = (e) => {
     console.log("Textarea changed:", e.target.value);
@@ -210,21 +233,22 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
   };
 
   const handleUploadFromDropBox = () => {
-    setUploading(true);
-    setTimeout(() => {
-      setUploading(false);
-      setAnalyzing(true);
-      setTimeout(() => {
-        setAnalyzing(false);
-        setUploadComplete(true);
-        setPreviewContent(
-          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vehicula, est non blandit luctus, orci justo bibendum urna, at gravida ligula eros eget lectus."
-        ); // Set preview content
+    setOpen(true)
+    // setUploading(true);
+    // setTimeout(() => {
+    //   setUploading(false);
+    //   setAnalyzing(true);
+    //   setTimeout(() => {
+    //     setAnalyzing(false);
+    //     setUploadComplete(true);
+    //     setPreviewContent(
+    //       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque vehicula, est non blandit luctus, orci justo bibendum urna, at gravida ligula eros eget lectus."
+    //     ); // Set preview content
 
-        //dispatch function
-        // dispatch(setOverview())
-      }, 3000); // Simulate analyzing
-    }, 3000); // Simulate upload
+    //     //dispatch function
+    //     // dispatch(setOverview())
+    //   }, 3000); // Simulate analyzing
+    // }, 3000); // Simulate upload
   };
 
   const handleDialogClose = () => {
@@ -234,8 +258,56 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
     setUploadComplete(false);
     setPreviewContent("");
   };
+  const handleTextInputUpload = async () => {
+    setUploading(true);
+    setOpen(false);
+    try {
+      let data = JSON.stringify({
+        case_overview: content,
+      });
+
+      let config = {
+        method: "post",
+        maxBodyLength: Infinity,
+        url: `${NODE_API_ENDPOINT}/courtroom/api/new_case/text`,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+        data: data,
+      };
+
+      const response = await axios.request(config);
+      // const response = await axios.post(
+      //   `${NODE_API_ENDPOINT}/courtroom/api/new_case/text`,
+      //   data,
+      //   {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //       Authorization: `Bearer ${currentUser.token}`,
+      //     },
+      //   }
+      // );
+
+      // Handle response and update state
+      console.log(response);
+      setPreviewContent(response.data.data.fetchedOverview.case_overview);
+      setInputText(response.data.data.fetchedOverview.case_overview);
+      setUploading(false);
+      setAnalyzing(true);
+
+      setTimeout(() => {
+        setAnalyzing(false);
+        setUploadComplete(true);
+      }, 3000);
+    } catch (error) {
+      console.log(error);
+      toast.error("Error uploading file");
+    }
+  };
 
   return (
+    <>
     <motion.div
       style={{
         display: "flex",
@@ -268,11 +340,11 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
         <div className={styles.verticalLine}></div>
         <div
           className={`${styles.images} gap-10 `}
-          onClick={() => handleClick("drive")}
+          onClick={() => handleClick("dropbox")}
         >
           <img className="p-5" src={DropBox} alt="" />
           <h4 className="font-semibold text-neutral-500">
-            Upload from Drop Box
+            Write your own text
           </h4>
         </div>
         <div className={styles.verticalLine}></div>
@@ -321,6 +393,37 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
         )}
       </Dialog>
     </motion.div>
+      <Modal
+      open={open}
+      onClose={() => {
+        setOpen(false);
+      }}
+      aria-labelledby="modal-modal-title"
+      aria-describedby="modal-modal-description"
+    >
+      <Box sx={style} className="overflow-scroll  gap-6 flex flex-col">
+        <textarea
+          id="content"
+          className="p-2 border-2"
+          name="w3review"
+          rows="20"
+          cols="50"
+          value={content}
+          placeholder="Write your own Content..."
+          onChange={(e) => {
+            setconetnt(e.target.value);
+          }}
+        ></textarea>
+
+        <button
+          onClick={handleTextInputUpload}
+          className="bg-[#008080] text-white rounded-md shadow-lg px-4 py-2 w-[30%]"
+        >
+          Upload
+        </button>
+      </Box>
+    </Modal>
+    </>
   );
 };
 

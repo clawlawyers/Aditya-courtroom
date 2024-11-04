@@ -91,9 +91,9 @@ const OtpCard = () => {
     const credential = PhoneAuthProvider.credential(verificationId, otp);
     localStorage.setItem("loginOtp", otp);
 
-    signInWithCredential(auth, credential)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
+    // signInWithCredential(auth, credential)
+    //   .then(async (userCredential) => {
+    //     const user = userCredential.user;
         alert("Phone number verified successfully!");
 
         const props = await fetch(
@@ -122,12 +122,12 @@ const OtpCard = () => {
         // localStorage.setItem("auth-key", JSON.stringify(decryptKey));
         dispatch(login({ user: parsedProps.data }));
         navigate("/courtroom-ai");
-      })
+      // })
 
-      .catch((error) => {
-        console.error("Error during OTP verification:", error);
-        // setProceedToPayment(false);
-      });
+      // .catch((error) => {
+      //   console.error("Error during OTP verification:", error);
+      //   // setProceedToPayment(false);
+      // });
   };
 
   return (
