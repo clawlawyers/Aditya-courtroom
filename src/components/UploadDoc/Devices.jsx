@@ -48,9 +48,7 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
   const [closed, setClosed] = useState(false);
   const [files, setFile] = useState(null);
   const [inputText, setInputText] = useState("");
-  const [toBeUploadedFiles, setToBeUploadedFiles] = useState([]);
-  const [uploadProgress, setUploadProgress] = useState({});
-  const [uploadedSuccessFully, setUploadedSuccessFully] = useState([]);
+
   const [open, setOpen] = useState(false);
   const [content, setconetnt] = useState("");
   const style = {
@@ -67,7 +65,11 @@ const Devices = ({ uploadedFile, setUploadedFile }) => {
     width: "50%",
   };
  
-  // console.log(inputText);
+
+  const [toBeUploadedFiles, setToBeUploadedFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [uploadedSuccessFully, setUploadedSuccessFully] = useState([]);
+
 
 
   
