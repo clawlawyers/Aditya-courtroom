@@ -432,7 +432,7 @@ const AiSidebar = () => {
         `${NODE_API_ENDPOINT}/specificLawyerCourtroom/edit_case`,
         {
           // user_id: currentUser.userId,
-          case_overview: encryptData(text, authKey),
+          case_overview: await encryptData(text, authKey),
         },
         {
           headers: {
@@ -716,7 +716,7 @@ const AiSidebar = () => {
           },
           body: JSON.stringify({
             // action: "Generate",
-            query: askLegalGptPrompt,
+            query: encryptData(askLegalGptPrompt, authKey),
           }),
         }
       );
@@ -1786,7 +1786,7 @@ const AiSidebar = () => {
                   setPromptArr([
                     ...promptArr,
                     {
-                      prompt: askLegalGptPrompt,
+                      prompt:   (askLegalGptPrompt),
                       promptResponse: null,
                     },
                   ]);
