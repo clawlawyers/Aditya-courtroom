@@ -112,7 +112,7 @@ const TimerComponent = React.memo(({ ExitToCourtroom }) => {
   return (
     <>
       <div className="flex justify-between items-center px-2 py-1 bg-[#C5C5C5] text-[#008080] border-2 rounded">
-        <h1 className="text-xs m-0 font-bold text-teal-800">Total Time:</h1>
+        <h1 id="time-left" className="text-xs m-0 font-bold text-teal-800">Total Time:</h1>
         <h1 className="text-xs m-0 font-semibold">{totalHours} hr</h1>
       </div>
       <div className="flex justify-between items-center px-2 py-1 bg-[#C5C5C5] text-[#008080] border-2 rounded">
@@ -938,6 +938,7 @@ const AiSidebar = () => {
                       onClose={handleMenuClose}
                     >
                       <MenuItem
+                       id="edit_doc"
                         disabled={
                           overViewDetails === "NA" || overViewDetails === ""
                         }
@@ -949,6 +950,7 @@ const AiSidebar = () => {
                         Edit
                       </MenuItem>
                       <MenuItem
+                      
                         onClick={evidenceAccess ? handleEvidenceClick : null}
                       >
                         <motion.p

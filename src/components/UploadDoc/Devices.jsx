@@ -270,7 +270,7 @@ const Devices = ({
           formData.append("isMultilang", true);
 
           const response = await axios.post(
-            `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/fileUpload`,
+            `${NODE_API_ENDPOINT}/specificLawyerCourtroom/fileUpload`,
             formData,
             {
               headers: {
@@ -279,6 +279,7 @@ const Devices = ({
               },
             }
           );
+          console.log(response.data)
           setFileNames((prev) => [...prev, response.data.data.fileName]);
           // console.log(response.data);
           uploadFileWithProgress(
@@ -375,7 +376,7 @@ const Devices = ({
     setAnalyzing(true);
     try {
       const response = await axios.post(
-        `${NODE_API_ENDPOINT}/courtroom/getoverview-formfilename`,
+        `${NODE_API_ENDPOINT}/specificLawyerCourtroom/getoverview-formfilename`,
         {
           // user_id: currentUser.userId,
           action: appendFile ? "append" : "add",

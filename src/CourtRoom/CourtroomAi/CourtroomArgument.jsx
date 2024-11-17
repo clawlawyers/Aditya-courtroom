@@ -35,6 +35,10 @@ import {
   decryptObject,
   encryptData,
 } from "../../utils/encryption";
+import { driver } from "driver.js";
+import "driver.js/dist/driver.css";
+import { setTutorialFalse } from "../../features/popup/popupSlice";
+import { setmaintut, setTutorial } from "../../features/sidebar/sidebarSlice";
 
 // const userArgument = [
 //   "I feel your pain. This is such a simple function and yet they make it so amazingly complicated. I find the same nonsense with adding a simple border to an object. They have 400 ways to shade the color of a box, but not even 1 simple option for drawing a line around the box. I get the feeling the Figma designers don’t ever use their product",
@@ -96,6 +100,12 @@ const CourtroomArgument = () => {
   const [fightType, setFightType] = useState("");
   const [otherFightType, setOtherFightType] = useState("");
 
+  const myDivRef = useRef(null);
+
+  
+  const tutorial = useSelector((state) => state.popup.tutorial);
+  const mainTut = useSelector((state) => state.sidebar.mainTut);
+  const driveUpload = useSelector((state) => state.sidebar.driveUpload);
   const handleClick = (event) => {
     setAnchorElObjection(event.currentTarget);
   };
@@ -129,6 +139,254 @@ const CourtroomArgument = () => {
       closeDialog();
     }
   };
+  useEffect(() => {
+    console.log("hiasasdd");
+    if (tutorial) {
+      console.log("adsd");
+      var driverObj = driver({
+        showProgress: true,
+        steps: [
+          // {
+          //   element: "#side-selection",
+          //   popover: {
+          //     title: "Ai judgde",
+          //     description:
+          //       "This will show ai judge response to an argument  ",
+          //     side: "left",
+          //     align: "start",
+          //   },
+          // },
+          {
+            element: "#aijudge",
+            popover: {
+              title: "AI Judgde",
+              description:
+                "This will show AI Judge response to an argument from both sides  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#ailawyer",
+            popover: {
+              title: "AI Lawyer",
+              description:
+                "This will show the response of the AI Lawyer of the opposing counsel",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#expand",
+            popover: {
+              title: "Exapnd",
+              description:
+                "Click this button to Exapnd response for better view   ",
+              side: "left",
+
+              align: "start",
+              onNextClick: () => {
+                console.log(myDivRef.current);
+                setAnchorEl(myDivRef.current);
+                driverObj.moveNext();
+              },
+            },
+          },
+          {
+            element: "#swaplawyer",
+            popover: {
+              title: "Change Side",
+              description:
+                "Click this button to change the side you are representing",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#relevant-case-menu",
+            popover: {
+              title: "Additional Features",
+              description: "Click this button to open Menu  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#relevantcase-button",
+            popover: {
+              title: "Relevant Case Laws",
+              description: "Click this button to show Relevant Cases  ",
+              side: "left",
+              align: "start",
+              onNextClick: () => {
+                setAnchorEl(null);
+                driverObj.moveNext();
+              },
+            },
+          },
+          {
+            element: "#evidence-menu",
+            popover: {
+              title: "Menu",
+              description: "Click this button to open Document Menu  ",
+              side: "left",
+              align: "start",
+              onNextClick: () => {
+                document.getElementById("evidence-menu").click();
+                driverObj.moveNext();
+              },
+            },
+          },
+          {
+            element: "#edit_doc",
+            popover: {
+              title: "Edit Documnet",
+              description: "Click this button to edit the Case File",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#evidence-button",
+            popover: {
+              title: "Add Evidence",
+              description:
+                "Add details about your evidence or upload our evidence to see if it will be appreciated by the court and to what extent.  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#evidence-testimony",
+            popover: {
+              title: "Add Testimony",
+              description:
+                "Add details about the situation your testimony was in or how is he supposed to be related to your case and get relevant cross examination questions for your testimony  ",
+              side: "left",
+              align: "start",
+              onNextClick: () => {
+                document.getElementById("long-menu").click();
+                driverObj.moveNext();
+              },
+            },
+          },
+          {
+            element: "#time-left",
+            popover: {
+              title: "Time Remaning ",
+              description: "It shows amount of Time Remaining for the Session ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#first-draft",
+            popover: {
+              title: "First Draft",
+              description:
+                "Get a list of arguments for your case to begin with ",
+              side: "left",
+              align: "start",
+            },
+          },
+
+          {
+            element: "#Ai-Drafter",
+            popover: {
+              title: "Document Drafter",
+              description:
+                " Directly draft and edit agreements and applications ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#legalGpt",
+            popover: {
+              title: "Legal Gpt",
+              description:
+                "Click this button to open Legal GPT popup to ask law releated queries ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#case-search",
+            popover: {
+              title: "Case Search",
+              description:
+                "Click this button to open a popup to search older case files related to your use case  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#claw-ai-ass",
+            popover: {
+              title: "Case AI Assistant",
+              description:
+                " Details on judge questions for your case and the things that you missed in your case while doing your research ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#download-session",
+            popover: {
+              title: "Download Session",
+              description:
+                "Click this button to download the entire Session Histroy in pdf form ",
+              side: "left",
+              align: "start",
+            },
+          },
+
+          {
+            element: "#download-case",
+            popover: {
+              title: "Download Case",
+              description:
+                "Click this button to download the Entire Case Histroy in pdf form ",
+              side: "left",
+              align: "start",
+            },
+          },
+
+          {
+            element: "#NewCaseInput",
+            popover: {
+              title: "New Case",
+              description: "Click this button to open a New Case File ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#userinput",
+            popover: {
+              title: "Enter Argument",
+              description:
+                "Enter your Arguments here. You can use both text and voice input  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#rest-your-case",
+            popover: {
+              title: "Rest Your Casr",
+              description:
+                "Rest your case for the final veridct form the AI Judge   ",
+              side: "left",
+              align: "start",
+            },
+          },
+        ],
+      });
+      driverObj.drive();
+      dispatch(setTutorialFalse());
+    }
+  }, [tutorial]);
 
   useEffect(() => {
     if (isDialogOpen) {
@@ -564,6 +822,251 @@ const CourtroomArgument = () => {
         firstDraftApi();
       }
       dispatch(setFightingSideModal(false));
+      var driverObj2 = driver({
+        showProgress: true,
+        steps: [
+          // {
+          //   element: "#side-selection",
+          //   popover: {
+          //     title: "Ai judgde",
+          //     description:
+          //       "This will show ai judge response to an argument  ",
+          //     side: "left",
+          //     align: "start",
+          //   },
+          // },
+          {
+            element: "#aijudge",
+            popover: {
+              title: "AI Judgde",
+              description:
+                "This will show AI Judge response to an argument from both sides  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#ailawyer",
+            popover: {
+              title: "AI Lawyer",
+              description:
+                "This will show the response of the AI Lawyer of the opposing counsel",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#expand",
+            popover: {
+              title: "Exapnd",
+              description:
+                "Click this button to Exapnd response for better view   ",
+              side: "left",
+
+              align: "start",
+              onNextClick: () => {
+                console.log(myDivRef.current);
+                setAnchorEl(myDivRef.current);
+                driverObj2.moveNext();
+              },
+            },
+          },
+          {
+            element: "#swaplawyer",
+            popover: {
+              title: "Change Side",
+              description:
+                "Click this button to change the side you are representing",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#relevant-case-menu",
+            popover: {
+              title: "Additional Features",
+              description: "Click this button to open Menu  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#relevantcase-button",
+            popover: {
+              title: "Relevant Case Laws",
+              description: "Click this button to show Relevant Cases  ",
+              side: "left",
+              align: "start",
+              onNextClick: () => {
+                setAnchorEl(null);
+                driverObj2.moveNext();
+              },
+            },
+          },
+          {
+            element: "#evidence-menu",
+            popover: {
+              title: "Menu",
+              description: "Click this button to open Document Menu  ",
+              side: "left",
+              align: "start",
+              onNextClick: () => {
+                document.getElementById("evidence-menu").click();
+                driverObj2.moveNext();
+              },
+            },
+          },
+          {
+            element: "#edit_doc",
+            popover: {
+              title: "Edit Documnet",
+              description: "Click this button to edit the Case File",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#evidence-button",
+            popover: {
+              title: "Add Evidence",
+              description:
+                "Add details about your evidence or upload our evidence to see if it will be appreciated by the court and to what extent.  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#evidence-testimony",
+            popover: {
+              title: "Add Testimony",
+              description:
+                "Add details about the situation your testimony was in or how is he supposed to be related to your case and get relevant cross examination questions for your testimony  ",
+              side: "left",
+              align: "start",
+              onNextClick: () => {
+                document.getElementById("long-menu").click();
+                driverObj2.moveNext();
+              },
+            },
+          },
+          {
+            element: "#time-left",
+            popover: {
+              title: "Time Remaning ",
+              description: "It shows amount of Time Remaining for the Session ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#first-draft",
+            popover: {
+              title: "First Draft",
+              description:
+                "Get a list of arguments for your case to begin with ",
+              side: "left",
+              align: "start",
+            },
+          },
+
+          {
+            element: "#Ai-Drafter",
+            popover: {
+              title: "Document Drafter",
+              description:
+                " Directly draft and edit agreements and applications ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#legalGpt",
+            popover: {
+              title: "Legal Gpt",
+              description:
+                "Click this button to open Legal GPT popup to ask law releated queries ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#case-search",
+            popover: {
+              title: "Case Search",
+              description:
+                "Click this button to open a popup to search older case files related to your use case  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#claw-ai-ass",
+            popover: {
+              title: "Case AI Assistant",
+              description:
+                " Details on judge questions for your case and the things that you missed in your case while doing your research ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#download-session",
+            popover: {
+              title: "Download Session",
+              description:
+                "Click this button to download the entire Session Histroy in pdf form ",
+              side: "left",
+              align: "start",
+            },
+          },
+
+          {
+            element: "#download-case",
+            popover: {
+              title: "Download Case",
+              description:
+                "Click this button to download the Entire Case Histroy in pdf form ",
+              side: "left",
+              align: "start",
+            },
+          },
+
+          {
+            element: "#NewCaseInput",
+            popover: {
+              title: "New Case",
+              description: "Click this button to open a New Case File ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#userinput",
+            popover: {
+              title: "Enter Argument",
+              description:
+                "Enter your Arguments here. You can use both text and voice input  ",
+              side: "left",
+              align: "start",
+            },
+          },
+          {
+            element: "#rest-your-case",
+            popover: {
+              title: "Rest Your Casr",
+              description:
+                "Rest your case for the final veridct form the AI Judge   ",
+              side: "left",
+              align: "start",
+            },
+          },
+        ],
+      });
+      // driverObj2.drive();
+      if(!mainTut){
+        driverObj2.drive();
+        dispatch(setmaintut())
+      }
     } catch (error) {
       console.log(error);
       dispatch(setFightingSideModal(false));
@@ -602,7 +1105,7 @@ const CourtroomArgument = () => {
   return (
     <div className="flex flex-col p-3 h-screen gap-2">
       {/* top container */}
-      <div className="grid grid-cols-2 h-[35vh] gap-2">
+      <div  className="grid grid-cols-2 h-[35vh] gap-2">
         {/* top left Cont */}
         {aiJudgeLoading ? (
           <div
@@ -618,7 +1121,9 @@ const CourtroomArgument = () => {
             <img alt="laoding" src={loader} className="w-28 h-28" />
           </div>
         ) : (
-          <div className="flex flex-col bg-[#033E40] overflow-auto border border-black rounded-lg">
+          <div
+          id="aijudge"
+           className="flex flex-col bg-[#033E40] overflow-auto border border-black rounded-lg">
             <div className="flex justify-between">
               <div className="h-[5vh] p-[10px] flex gap-[10px]">
                 <img
@@ -628,8 +1133,9 @@ const CourtroomArgument = () => {
                 />
                 <h1 className="text-sm m-0">AI Judge</h1>
               </div>
-              <div>
+              <div  id="relevant-case-menu">
                 <IconButton
+                
                   sx={{ color: "white" }}
                   aria-label="more"
                   aria-controls="long-menu"
@@ -660,6 +1166,7 @@ const CourtroomArgument = () => {
                   }}
                 >
                   <div
+                   id="relevantcase-button"
                     className="text-xs px-2 hover:cursor-pointer "
                     onClick={() => {
                       handleshowcaseaijudge();
@@ -692,6 +1199,8 @@ const CourtroomArgument = () => {
               </p>
             </div>
             <div
+              id="expand"
+
               onClick={() => setJudgeViewExpand(true)}
               className="h-[5vh] flex  items-center cursor-pointer px-2"
             >
@@ -703,6 +1212,7 @@ const CourtroomArgument = () => {
         {/* top right cont */}
         {aiLawyerLoading ? (
           <div
+
             className="bg-[#033E40] overflow-auto border border-black"
             style={{
               display: "flex",
@@ -715,7 +1225,9 @@ const CourtroomArgument = () => {
             <img alt="laoding" src={loader} className="w-28 h-28" />
           </div>
         ) : (
-          <div className="flex flex-col bg-[#033E40] rounded-lg overflow-auto border border-black">
+          <div
+          id="ailawyer"
+          className="flex flex-col bg-[#033E40] rounded-lg overflow-auto border border-black">
             <div className="flex justify-between">
               <div className="h-[5vh] p-[10px] flex gap-[10px]">
                 <img
@@ -725,7 +1237,7 @@ const CourtroomArgument = () => {
                 />
                 <h1 className="text-sm m-0">AI Lawyer</h1>
               </div>
-              <div>
+              <div id="relevant-case-menu">
                 {" "}
                 <IconButton
                   sx={{ color: "white" }}
@@ -896,6 +1408,7 @@ const CourtroomArgument = () => {
                         </motion.button>
                       ) : (
                         <div
+                        id="asdsads"
                           onClick={(e) =>
                             editIndex !== index && handleEdit(e, index)
                           }
@@ -1038,6 +1551,7 @@ const CourtroomArgument = () => {
             <h2 style={{ fontSize: "15px", margin: "0" }}>Add Argument</h2>
           </motion.button>
           <motion.button
+           id="rest-your-case"
             disabled={!verdictAccessRedux}
             whileTap={{ scale: "0.95" }}
             onClick={verdictAccessRedux ? handleVerdict : null}
