@@ -9,6 +9,10 @@ import { Button, CircularProgress, Menu } from "@mui/material";
 import { ArrowRight, Close, Download } from "@mui/icons-material";
 import { ArrowLeft } from "@mui/icons-material";
 import { MenuItem, IconButton } from "@mui/material";
+import { setTutorial } from "../../features/popup/popupSlice";
+
+import { IoReload } from "react-icons/io5";
+
 import { Popover } from "@mui/material";
 import {
   logout,
@@ -112,10 +116,10 @@ const TimerComponent = React.memo(({ ExitToCourtroom }) => {
   return (
     <>
       <div className="flex justify-between items-center px-2 py-1 bg-[#C5C5C5] text-[#008080] border-2 rounded">
-        <h1 id="time-left" className="text-xs m-0 font-bold text-teal-800">Total Time:</h1>
+        <h1  className="text-xs m-0 font-bold text-teal-800">Total Time:</h1>
         <h1 className="text-xs m-0 font-semibold">{totalHours} hr</h1>
       </div>
-      <div className="flex justify-between items-center px-2 py-1 bg-[#C5C5C5] text-[#008080] border-2 rounded">
+      <div id="time-left" className="flex justify-between items-center px-2 py-1 bg-[#C5C5C5] text-[#008080] border-2 rounded">
         <h1 className="text-xs m-0 font-bold text-teal-800">Time Used Up:</h1>
         <h1 className="text-xs m-0 font-semibold">
           {/* {timeLeft.minutes < 10 ? `0${timeLeft.minutes}` : timeLeft.minutes} :{" "}
@@ -914,6 +918,7 @@ const AiSidebar = () => {
                 </motion.button> */}
                 <div>
                   <IconButton
+                  id="evidence-menu"
                     sx={{ color: "white" }}
                     aria-label="more"
                     aria-controls="long-menu"
@@ -950,7 +955,7 @@ const AiSidebar = () => {
                         Edit
                       </MenuItem>
                       <MenuItem
-                      
+                      id="evidence-button"
                         onClick={evidenceAccess ? handleEvidenceClick : null}
                       >
                         <motion.p
@@ -965,7 +970,7 @@ const AiSidebar = () => {
                           Add Evidences
                         </motion.p>
                       </MenuItem>
-                      <MenuItem onClick={handleTestimonyClick}>
+                      <MenuItem id="evidence-testimony" onClick={handleTestimonyClick}>
                         Add Testimony
                       </MenuItem>
                     </Menu>
@@ -1056,7 +1061,7 @@ const AiSidebar = () => {
                 marginBottom: "5px",
               }}
             >
-              <div>
+              <div id="first-draft">
                 <p
                   className=" text-xs m-0 font-bold text-teal-800"
                   style={{ textDecoration: "none" }}
@@ -1101,7 +1106,7 @@ const AiSidebar = () => {
                 marginBottom: "5px",
               }}
             >
-              <div>
+              <div id="Ai-Drafter">
                 <p className="text-xs m-0 font-bold text-teal-800">
                   Ai Drafter
                 </p>
@@ -1144,7 +1149,7 @@ const AiSidebar = () => {
                 marginBottom: "5px",
               }}
             >
-              <div>
+              <div id ="legalGpt">
                 <p className="text-xs m-0 font-bold text-teal-800">
                   Ask LegalGPT
                 </p>
@@ -1185,13 +1190,13 @@ const AiSidebar = () => {
                 cursor: "pointer",
               }}
             >
-              <div>
+              <div id="case-search">
                 <p className="text-xs m-0 font-bold text-teal-800">
                   Case Search
                 </p>
               </div>
-              <div style={{ width: "15px", margin: "0" }}>
-                <svg
+              <div  style={{ width: "15px", margin: "0" }}>
+                <svg 
                   width="24"
                   height="24"
                   style={{ fill: "#008080", cursor: "pointer" }}
@@ -1205,8 +1210,9 @@ const AiSidebar = () => {
             </motion.div>
           </div>
           {aiAssistantAccess ? (
-            <div className="flex justify-end cursor-pointer relative">
+            <div   id="claw-ai-ass" className="flex justify-end cursor-pointer relative">
               <motion.img
+              id="claw-ai-ass"
                 className={`${
                   overViewDetails === "NA" || overViewDetails === ""
                     ? "opacity-75 pointer-events-none cursor-not-allowed h-9 w-9"
@@ -1224,7 +1230,7 @@ const AiSidebar = () => {
                 }}
               />
               {aiIconHover ? (
-                <h1 className="absolute text-xs right-16 top-0 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
+                <h1  className="absolute text-xs right-16 top-0 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
                   CLAW AI Assistant
                 </h1>
               ) : (
@@ -1289,7 +1295,7 @@ const AiSidebar = () => {
                   src={firstDraftLogo}
                   alt="firstdraft"
                 />
-                <p className="m-0 text-xs text-white">
+                <p id="download-session" className="m-0 text-xs text-white">
                   Download Session History
                 </p>
               </motion.div>
@@ -1304,7 +1310,7 @@ const AiSidebar = () => {
                 whileHover={{ scale: "1.01" }}
               >
                 <img className="w-4" src={aiDrafter} alt="aiDrafter" />
-                <p className="m-0 text-xs text-white">Download Case History</p>
+                <p id="download-case" className="m-0 text-xs text-white">Download Case History</p>
               </motion.div>
 
               {/* <motion.div
@@ -1325,7 +1331,7 @@ const AiSidebar = () => {
                 <img src={oldCaseLogo} />
                 <p className="m-0 text-xs text-white">Old Case Search</p>
               </motion.div> */}
-              <Link to={"/courtroom-ai"}>
+              <Link to={"/courtroom-ai"} className="no-underline">
                 <motion.div
                   whileTap={{ scale: "0.95" }}
                   whileHover={{ scale: "1.01" }}
@@ -1337,8 +1343,9 @@ const AiSidebar = () => {
                   }}
                 >
                   <img src={newCaseLogo} />
-                  <p
-                    className="m-0 text-xs text-white"
+                  <p 
+                  id="NewCaseInput"
+                    className="m-0  text-xs text-white"
                     onClick={() => {
                       saveHistory();
                       dispatch(setOverview(""));
@@ -1376,6 +1383,24 @@ const AiSidebar = () => {
 
                 <p className="m-0 text-xs" onClick={() => ExitToCourtroom()}>
                   Exit Courtroom
+                </p>
+              </motion.div>
+              <motion.div
+                whileTap={{ scale: "0.95" }}
+                whileHover={{ scale: "1.01" }}
+                className={`${
+                  overViewDetails === "NA" || overViewDetails === ""
+                    ? "opacity-75 pointer-events-none cursor-not-allowed flex items-center gap-[12px] relative"
+                    : " flex items-center gap-[12px] cursor-pointer relative"
+                }`}
+              >
+                {/* <img className="h-4 w-4" src={exitLogo} /> */}
+                <IoReload />
+                <p
+                  className="m-0 text-xs"
+                  onClick={() => dispatch(setTutorial())}
+                >
+                  Restart Tutorial
                 </p>
               </motion.div>
             </div>

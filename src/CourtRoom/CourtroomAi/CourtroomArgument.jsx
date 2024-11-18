@@ -106,6 +106,11 @@ const CourtroomArgument = () => {
   const tutorial = useSelector((state) => state.popup.tutorial);
   const mainTut = useSelector((state) => state.sidebar.mainTut);
   const driveUpload = useSelector((state) => state.sidebar.driveUpload);
+  const sidebarTut = useSelector((state) => state.sidebar.sidebarTut);
+
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
   const handleClick = (event) => {
     setAnchorElObjection(event.currentTarget);
   };
@@ -374,7 +379,7 @@ const CourtroomArgument = () => {
           {
             element: "#rest-your-case",
             popover: {
-              title: "Rest Your Casr",
+              title: "Rest Your Case",
               description:
                 "Rest your case for the final veridct form the AI Judge   ",
               side: "left",
@@ -644,6 +649,49 @@ const CourtroomArgument = () => {
 
       setAiJudgeLoading(true);
       setAiLawyerLoading(true);
+      if (userArgument.length == 0) {
+        await sleep(2000);
+        const driverObj1 = driver({
+          showProgress: true,
+          steps: [
+            {
+              element: ".arguments:nth-child(1)",
+              popover: {
+                title: "Argument",
+                description: "Click on the Argument for more option  ",
+                side: "left",
+                align: "start",
+                onNextClick: () => {
+                  console.log("asdad");
+                  handleArgumentSelect(0, userArgument[0]);
+
+                  driverObj1.moveNext();
+                },
+              },
+            },
+            {
+              element: ".arguments:nth-child(1)",
+              popover: {
+                title: "Edit and Objection",
+                description:
+                  "Click on red button to Show Objections and and the button beside to edit the Argument ",
+                side: "left",
+                align: "start",
+
+                onNextClick: () => {
+                  // .. remove element
+                  console.log("asdasdasdasd");
+                  dispatch(setTutorial());
+                  console.log(sidebarTut);
+                  driverObj1.destroy();
+                },
+              },
+            },
+          ],
+        });
+        driverObj1.drive();
+      }
+
 
       const encryptedData = encryptData(addArgumentInputText, authKey);
 
@@ -676,6 +724,7 @@ const CourtroomArgument = () => {
       setAiLawyerLoading(false);
 
       //clear input text
+      
       setAddArgumentInputText(null);
     } catch (error) {
       if (error.response.data.error.explanation === "Please refresh the page") {
@@ -1142,6 +1191,7 @@ const CourtroomArgument = () => {
                   aria-haspopup="true"
                   id="judge"
                   onClick={handleMenuOpen}
+                  ref={myDivRef}
                 >
                   <MoreVert />
                 </IconButton>
@@ -1279,6 +1329,7 @@ const CourtroomArgument = () => {
                 <h1 className="text-xs m-[5px]">Expand</h1>
               </div>
               <motion.div
+              id="swaplawyer"
                 onClick={userArgument.length > 0 ? handleSwap : null}
                 whileTap={
                   tapAnimations[userArgument.length > 0 ? "true" : "false"]
@@ -1302,7 +1353,7 @@ const CourtroomArgument = () => {
                     fill-rule="nonzero"
                   />
                 </svg>
-                <h1 className="text-xs m-[5px]">Swap with AI Lawyer</h1>
+                <h1  className="text-xs m-[5px]">Swap with AI Lawyer</h1>
               </motion.div>
             </div>
           </div>
@@ -1338,7 +1389,7 @@ const CourtroomArgument = () => {
               >
                 {userArgument.map((x, index) => (
                   <div
-                    className=""
+                      className="arguments"
                     onClick={() => {
                       handleArgumentSelect(index, x);
                     }}
@@ -1502,7 +1553,7 @@ const CourtroomArgument = () => {
       {/* bottom container */}
       <div className="w-full grid grid-cols-[65%_35%] items-center">
         <div className="pr-2 relative">
-          <input
+          <input id="userinput"
             value={addArgumentInputText !== null ? addArgumentInputText : ""}
             disabled={aiJudgeLoading || aiLawyerLoading}
             onChange={(e) => setAddArgumentInputText(e.target.value)}
@@ -1575,7 +1626,7 @@ const CourtroomArgument = () => {
               color: "white",
             }}
           >
-            <h2 style={{ fontSize: "15px", margin: "0" }}>Rest Your Case</h2>
+            <h2 id="rest-your-case" style={{ fontSize: "15px", margin: "0" }}>Rest Your Case</h2>
           </motion.button>
           {verdictAccess ? (
             <h1 className="z-30 absolute text-xs right-7 -top-8 bg-[#033E40] p-2 rounded-lg border-2 border-[#00ffa3]">
