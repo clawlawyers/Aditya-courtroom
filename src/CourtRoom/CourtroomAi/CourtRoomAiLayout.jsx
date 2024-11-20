@@ -27,7 +27,7 @@ const CourtRoomAiLayout = () => {
 
   console.log(currentUser);
 
-  // useEffect(() => {
+  useEffect(() => {
   if (currentUser === "") {
     navigate("/");
   }
@@ -37,7 +37,7 @@ const CourtRoomAiLayout = () => {
     dispatch(logout());
     navigate("/");
   }
-  // }, [currentUser]);
+  }, [currentUser]);
 
   useEffect(() => {
     console.log(caseOverView);

@@ -7,7 +7,7 @@ import { NODE_API_ENDPOINT } from "../../utils/utils";
 import { editDrafter, removeDrafter } from "../../features/laws/drafterSlice";
 import Markdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
-import { decryptData } from "../../utils/encryption";
+import { decryptData, encryptData } from "../../utils/encryption";
 
 const AiDrafter = () => {
   const drafterDoc = useSelector((state) => state.drafter.drafterDoc);
@@ -38,9 +38,10 @@ const AiDrafter = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${currentUser.token}`,
           },
-          body: JSON.stringify({ query: promptText }),
+          body: JSON.stringify({ query: encryptData(promptText, authKey) }),
         }
       );
+      
       const parsedProps = await props.json();
       dispatch(
         editDrafter({
