@@ -40,10 +40,11 @@ const Devices = ({
   languageArr,
   appendFile,
 }) => {
-
-  const inputCaseTutorial = useSelector((state) => state.sidebar.inputCaseTutorial);
+  const inputCaseTutorial = useSelector(
+    (state) => state.sidebar.inputCaseTutorial
+  );
   const caseOverView = useSelector((state) => state.user.caseOverview);
-  const driveUpload = useSelector((state)=> state.sidebar.driveUpload)
+  const driveUpload = useSelector((state) => state.sidebar.driveUpload);
 
   const driverObj = driver({
     showProgress: true,
@@ -125,11 +126,12 @@ const Devices = ({
     setCaseOverview(e.target.value);
   };
   useEffect(() => {
-    if(!inputCaseTutorial){
+    if (!inputCaseTutorial) {
       if (caseOverView == "NA" || caseOverView == "") {
-      driverObj.drive();
-      dispatch(setinputCaseTutorial())
-    }}
+        driverObj.drive();
+        dispatch(setinputCaseTutorial());
+      }
+    }
   }, []);
 
   const handleSave = async () => {
@@ -148,7 +150,7 @@ const Devices = ({
           },
         }
       );
-      
+
       dispatch(setOverview(inputText));
       dispatch(setFightingSideModal(true));
       setUploading(false);
@@ -279,7 +281,7 @@ const Devices = ({
               },
             }
           );
-          console.log(response.data)
+          console.log(response.data);
           setFileNames((prev) => [...prev, response.data.data.fileName]);
           // console.log(response.data);
           uploadFileWithProgress(
@@ -380,7 +382,7 @@ const Devices = ({
         {
           // user_id: currentUser.userId,
           action: appendFile ? "append" : "add",
-          language: languageArr.map(a => a.toLowerCase()).join(","),
+          language: languageArr.map((a) => a.toLowerCase()).join(","),
           fileNameArray: uploadedSuccessFully,
           isMultilang: true,
         },
@@ -492,14 +494,17 @@ const Devices = ({
 
     formData.append("isMultilang", true); // this is for multilang
 
-    const response = await fetch(`${NODE_API_ENDPOINT}/courtroom/newcase`, {
-      method: "POST",
-      body: formData,
-      headers: {
-        // "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${currentUser.token}`,
-      },
-    });
+    const response = await fetch(
+      `${NODE_API_ENDPOINT}/specificLawyerCourtroom/newcase`,
+      {
+        method: "POST",
+        body: formData,
+        headers: {
+          // "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${currentUser.token}`,
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to upload file to backend");
@@ -554,7 +559,7 @@ const Devices = ({
       let config = {
         method: "post",
         maxBodyLength: Infinity,
-        url: `${NODE_API_ENDPOINT}/courtroom/api/new_case/text`,
+        url: `${NODE_API_ENDPOINT}/specificLawyerCourtroom/api/new_case/text`,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${currentUser.token}`,
