@@ -7,7 +7,7 @@ import {
   signInWithCredential,
   signInWithPhoneNumber,
 } from "../../utils/firebase";
-import { NODE_API_ENDPOINT } from "../../utils/utils";
+import { NODE_API_ENDPOINT, OTP_ENDPOINT } from "../../utils/utils";
 import { useDispatch } from "react-redux";
 import {
   login,
@@ -16,12 +16,15 @@ import {
 import { data } from "autoprefixer";
 import { motion } from "framer-motion";
 import { decryptData } from "../../utils/encryption";
+import toast from "react-hot-toast";
 
 const OtpCard = () => {
   const [phoneNumber, setPhoneNumber] = useState();
   const [getOtp, setGetOtp] = useState(false);
   const [otp, setOtp] = useState(null);
   const [verificationId, setVerificationId] = useState("");
+  const [otpToken, setOtpToken] = useState("");
+  const [verifyToken, setVerifyToken] = useState("");
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -39,9 +42,57 @@ const OtpCard = () => {
     }
   }
 
+  // const handleSendOTP = async () => {
+  //   // Example usage
+  //   clearRecaptchaChildren();
+  //   // check ether mobile number is registered or not
+  //   const fetchedResp = await fetch(
+  //     `${NODE_API_ENDPOINT}/specificLawyerCourtroom/book-courtroom-validation`,
+  //     {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({ phoneNumber }),
+  //     }
+  //   );
+
+  //   if (!fetchedResp.ok) {
+  //     alert("This number is not registered!");
+  //     return;
+  //   }
+
+  //   // handleDisableButton();
+  //   console.log("sendOTP");
+
+  //   const recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha", {
+  //     size: "invisible",
+  //     callback: (response) => {
+  //       // reCAPTCHA solved, allow signInWithPhoneNumber.
+  //       console.log(response);
+  //     },
+  //     auth,
+  //   });
+
+  //   console.log("I am here");
+  //   console.log(phoneNumber);
+
+  //   signInWithPhoneNumber(auth, "+91" + phoneNumber, recaptchaVerifier)
+  //     .then((confirmationResult) => {
+  //       setVerificationId(confirmationResult.verificationId);
+  //       alert("OTP sent!");
+  //       setGetOtp(true);
+  //     })
+  //     .catch((error) => {
+  //       alert("Error during OTP request");
+  //       console.error("Error during OTP request:", error);
+  //       setGetOtp(false);
+  //     });
+  // };
+
   const handleSendOTP = async () => {
     // Example usage
-    clearRecaptchaChildren();
+    // clearRecaptchaChildren();
     // check ether mobile number is registered or not
     const fetchedResp = await fetch(
       `${NODE_API_ENDPOINT}/specificLawyerCourtroom/book-courtroom-validation`,
@@ -59,42 +110,67 @@ const OtpCard = () => {
       return;
     }
 
-    // handleDisableButton();
-    console.log("sendOTP");
-
-    const recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha", {
-      size: "invisible",
-      callback: (response) => {
-        // reCAPTCHA solved, allow signInWithPhoneNumber.
-        console.log(response);
-      },
-      auth,
-    });
-
-    console.log("I am here");
-    console.log(phoneNumber);
-
-    signInWithPhoneNumber(auth, "+91" + phoneNumber, recaptchaVerifier)
-      .then((confirmationResult) => {
-        setVerificationId(confirmationResult.verificationId);
-        alert("OTP sent!");
-        setGetOtp(true);
-      })
-      .catch((error) => {
-        alert("Error during OTP request");
-        console.error("Error during OTP request:", error);
-        setGetOtp(false);
+    try {
+      const handleOTPsend = await fetch(`${OTP_ENDPOINT}/generateOTPmobile`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          phone: phoneNumber,
+          siteName: "www.clawlaw.in",
+        }),
       });
+      if (!handleOTPsend.ok) {
+        console.error("Failed to send OTP");
+        toast.error("Failed to send OTP");
+        throw new Error("Failed to send OTP");
+      }
+      const data = await handleOTPsend.json();
+      if (data.authtoken) {
+        setOtpToken(data.authtoken);
+      }
+      // alert("OTP sent!");
+      toast.success("OTP sent!");
+      setGetOtp(true);
+    } catch (error) {
+      toast.error("Failed to send OTP");
+      console.error("Error during OTP request:", error);
+      setGetOtp(false);
+    }
   };
 
   const handleOtpVerification = async () => {
-    const credential = PhoneAuthProvider.credential(verificationId, otp);
-    localStorage.setItem("loginOtp", otp);
+    // const credential = PhoneAuthProvider.credential(verificationId, otp);
+    // localStorage.setItem("loginOtp", otp);
 
-    signInWithCredential(auth, credential)
-      .then(async (userCredential) => {
-        const user = userCredential.user;
-        alert("Phone number verified successfully!");
+    try {
+      if (otp.length === 6) {
+        // setIsLoading(true);
+
+        const verifyOTPResponse = await fetch(
+          `${OTP_ENDPOINT}/verifyotpmobile`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "auth-token": otpToken,
+            },
+            body: JSON.stringify({
+              otp: otp,
+            }),
+          }
+        );
+
+        if (!verifyOTPResponse.ok) {
+          const err = verifyOTPResponse.json();
+          // setIsLoading(false);
+          toast.error(err.error);
+          return;
+        }
+
+        const OTPdata = await verifyOTPResponse.json();
+        console.log(OTPdata);
 
         const props = await fetch(
           `${NODE_API_ENDPOINT}/specificLawyerCourtroom/getCourtroomUser`,
@@ -122,13 +198,63 @@ const OtpCard = () => {
         // localStorage.setItem("auth-key", JSON.stringify(decryptKey));
         dispatch(login({ user: parsedProps.data }));
         navigate("/courtroom-ai");
-      })
 
-      .catch((error) => {
-        console.error("Error during OTP verification:", error);
-        // setProceedToPayment(false);
-      });
+        console.log(verifyToken);
+      } else throw new Error("Otp length should be of 6");
+    } catch (error) {
+      toast.error("Failed to verify OTP");
+      // setIsLoading(false);
+
+      console.error(error);
+    } finally {
+      // setIsLoading(false);
+    }
   };
+
+  // const loginToUser = (tokenV) => {};
+
+  // const handleOtpVerification = async () => {
+  //   const credential = PhoneAuthProvider.credential(verificationId, otp);
+  //   localStorage.setItem("loginOtp", otp);
+
+  //   signInWithCredential(auth, credential)
+  //     .then(async (userCredential) => {
+  //       const user = userCredential.user;
+  //       alert("Phone number verified successfully!");
+
+  //       const props = await fetch(
+  //         `${NODE_API_ENDPOINT}/specificLawyerCourtroom/getCourtroomUser`,
+  //         {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             // Authorization: `Bearer ${parsedUser.token}`,
+  //           },
+  //         }
+  //       );
+
+  //       if (!props.ok) {
+  //         alert("User not found!");
+  //         return;
+  //       }
+  //       const parsedProps = await props.json();
+  //       console.log(parsedProps.data);
+  //       const decryptKey = decryptData(
+  //         parsedProps?.data?.key,
+  //         process.env.REACT_APP_KEY
+  //       );
+  //       console.log(decryptKey);
+  //       dispatch(setAuthKey({ key: decryptKey }));
+  //       // localStorage.setItem("auth-key", JSON.stringify(decryptKey));
+  //       dispatch(login({ user: parsedProps.data }));
+  //       navigate("/courtroom-ai");
+  //     })
+
+  //     .catch((error) => {
+  //       console.error("Error during OTP verification:", error);
+  //       // setProceedToPayment(false);
+  //     });
+  // };
 
   return (
     <>
